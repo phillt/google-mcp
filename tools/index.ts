@@ -3,8 +3,12 @@ import { calendarTools } from "./calendar/index";
 import { gmailTools } from "./gmail/index";
 import { driveTools } from "./drive/index";
 import { tasksTools } from "./tasks/index";
+import { accountTools } from "./account/index";
 
 const tools = [
+  // Account management tools
+  ...accountTools,
+
   // OAuth tools
   ...oauthTools,
 

@@ -33,6 +33,7 @@ export const LIST_FILES_TOOL: Tool = {
         description:
           "Fields to include in the response (use Google Drive API syntax)",
       },
+      ...accountIdProperty,
     },
   },
 };
@@ -47,6 +48,7 @@ export const GET_FILE_CONTENT_TOOL: Tool = {
         type: "string",
         description: "ID of the file to retrieve",
       },
+      ...accountIdProperty,
     },
     required: ["fileId"],
   },
@@ -75,6 +77,7 @@ export const CREATE_FILE_TOOL: Tool = {
         type: "string",
         description: "ID of the folder to create the file in",
       },
+      ...accountIdProperty,
     },
     required: ["name", "content"],
   },
@@ -98,6 +101,7 @@ export const UPDATE_FILE_TOOL: Tool = {
         type: "string",
         description: "MIME type of the file (if different from original)",
       },
+      ...accountIdProperty,
     },
     required: ["fileId", "content"],
   },
@@ -118,6 +122,7 @@ export const DELETE_FILE_TOOL: Tool = {
         description:
           "Whether to permanently delete the file or move it to trash",
       },
+      ...accountIdProperty,
     },
     required: ["fileId"],
   },
@@ -149,6 +154,7 @@ export const SHARE_FILE_TOOL: Tool = {
         type: "string",
         description: "Custom message to include in the notification email",
       },
+      ...accountIdProperty,
     },
     required: ["fileId", "emailAddress"],
   },

@@ -273,17 +273,20 @@ export function createGoogleMcpServer() {
     }
   });
 
-  // Initialize authentication and services
-  initializationPromise = createAuthClient()
-    .then((authClient) => {
-      googleCalendarInstance = new GoogleCalendar(authClient);
-      googleGmailInstance = new GoogleGmail(authClient);
-      googleDriveInstance = new GoogleDrive(authClient);
-      googleTasksInstance = new GoogleTasks(authClient);
-    })
-    .catch((error) => {
-      throw error;
-    });
+  // Initialize: migrate legacy tokens, then load all accounts
+  initializationPromise = (async () => {
+    try {
+      await migrateTokenFile(tokensDir);
+      await registry.loadAllAccounts();
+    } catch (error) {
+      // Non-fatal: server can still operate, user can authenticate manually
+      console.error(
+        `Initialization warning: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  })();
 
   return server;
 }

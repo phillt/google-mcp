@@ -38,6 +38,7 @@ export const LIST_EMAILS_TOOL: Tool = {
         type: "string",
         description: "Search query to filter emails",
       },
+      ...accountIdProperty,
     },
   },
 };
@@ -57,6 +58,7 @@ export const GET_EMAIL_TOOL: Tool = {
         description:
           "Format to return the email in (full, metadata, minimal, raw)",
       },
+      ...accountIdProperty,
     },
     required: ["messageId"],
   },
@@ -77,6 +79,7 @@ export const GET_EMAIL_BY_INDEX_TOOL: Tool = {
         description:
           "Format to return the email in (full, metadata, minimal, raw)",
       },
+      ...accountIdProperty,
     },
     required: ["index"],
   },
@@ -146,6 +149,7 @@ export const SEND_EMAIL_TOOL: Tool = {
         description:
           "Array of attachments to include with the email. Provide either filePath for local files or driveFileId for Google Drive files.",
       },
+      ...accountIdProperty,
     },
     required: ["to", "subject", "body"],
   },
@@ -215,6 +219,7 @@ export const DRAFT_EMAIL_TOOL: Tool = {
         description:
           "Array of attachments to include with the email. Provide either filePath for local files or driveFileId for Google Drive files.",
       },
+      ...accountIdProperty,
     },
     required: ["to", "subject", "body"],
   },
@@ -234,6 +239,7 @@ export const DELETE_EMAIL_TOOL: Tool = {
         type: "boolean",
         description: "Whether to permanently delete or move to trash",
       },
+      ...accountIdProperty,
     },
     required: ["messageId"],
   },
@@ -259,6 +265,7 @@ export const MODIFY_LABELS_TOOL: Tool = {
         items: { type: "string" },
         description: "Labels to remove from the message",
       },
+      ...accountIdProperty,
     },
     required: ["messageId"],
   },
@@ -279,6 +286,7 @@ export const DOWNLOAD_ATTACHMENTS_TOOL: Tool = {
         description:
           "Path where to save the attachments (optional, defaults to user's Downloads folder)",
       },
+      ...accountIdProperty,
     },
     required: ["messageId"],
   },

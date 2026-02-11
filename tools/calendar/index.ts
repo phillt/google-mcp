@@ -18,6 +18,7 @@ export const SET_DEFAULT_CALENDAR_TOOL: Tool = {
         type: "string",
         description: "The ID of the calendar to set as default",
       },
+      ...accountIdProperty,
     },
     required: ["calendarId"],
   },
@@ -28,7 +29,9 @@ export const LIST_CALENDARS_TOOL: Tool = {
   description: "List all available calendars",
   inputSchema: {
     type: "object",
-    properties: {},
+    properties: {
+      ...accountIdProperty,
+    },
   },
 };
 
@@ -79,6 +82,7 @@ export const CREATE_EVENT_TOOL: Tool = {
         description:
           "Optional: ID of calendar to use (defaults to primary if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["summary", "start", "end"],
   },
@@ -115,6 +119,7 @@ export const GET_EVENTS_TOOL: Tool = {
         type: "boolean",
         description: "Whether to include deleted events",
       },
+      ...accountIdProperty,
     },
   },
 };
@@ -134,6 +139,7 @@ export const GET_EVENT_TOOL: Tool = {
         description:
           "Optional: ID of calendar to use (defaults to primary if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["eventId"],
   },
@@ -188,6 +194,7 @@ export const UPDATE_EVENT_TOOL: Tool = {
         description:
           "Optional: ID of calendar to use (defaults to primary if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["eventId"],
   },
@@ -208,6 +215,7 @@ export const DELETE_EVENT_TOOL: Tool = {
         description:
           "Optional: ID of calendar to use (defaults to primary if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["eventId"],
   },
@@ -237,6 +245,7 @@ export const FIND_FREE_TIME_TOOL: Tool = {
         description:
           "Optional: Calendar IDs to check (defaults to primary if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["startDate", "endDate", "duration"],
   },

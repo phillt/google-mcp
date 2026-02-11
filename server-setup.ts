@@ -4,11 +4,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import tools from "./tools/index";
-import { createAuthClient } from "./utils/auth";
-import GoogleCalendar from "./utils/calendar";
-import GoogleGmail from "./utils/gmail";
-import GoogleDrive from "./utils/drive";
-import GoogleTasks from "./utils/tasks";
+import { getTokensDir, migrateTokenFile } from "./utils/auth";
+import { AccountRegistry } from "./utils/account-registry";
 
 // Import handlers
 import * as calendarHandlers from "./handlers/calendar";
@@ -16,28 +13,12 @@ import * as gmailHandlers from "./handlers/gmail";
 import * as driveHandlers from "./handlers/drive";
 import * as tasksHandlers from "./handlers/tasks";
 import * as oauthHandlers from "./handlers/oauth";
+import * as accountHandlers from "./handlers/account";
 
 export function createGoogleMcpServer() {
-  // Service instances
-  let googleCalendarInstance: GoogleCalendar;
-  let googleGmailInstance: GoogleGmail;
-  let googleDriveInstance: GoogleDrive;
-  let googleTasksInstance: GoogleTasks;
+  const tokensDir = getTokensDir();
+  const registry = new AccountRegistry(tokensDir);
   let initializationPromise: Promise<void>;
-
-  // Service setters for OAuth handlers
-  const setGoogleCalendarInstance = (instance: GoogleCalendar) => {
-    googleCalendarInstance = instance;
-  };
-  const setGoogleGmailInstance = (instance: GoogleGmail) => {
-    googleGmailInstance = instance;
-  };
-  const setGoogleDriveInstance = (instance: GoogleDrive) => {
-    googleDriveInstance = instance;
-  };
-  const setGoogleTasksInstance = (instance: GoogleTasks) => {
-    googleTasksInstance = instance;
-  };
 
   // Initialize the MCP server
   const server = new Server(

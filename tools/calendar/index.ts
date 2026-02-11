@@ -1,5 +1,13 @@
 import { type Tool } from "@modelcontextprotocol/sdk/types.js";
 
+const accountIdProperty = {
+  accountId: {
+    type: "string",
+    description:
+      "Email of the Google account to use. If omitted, uses the default account.",
+  },
+};
+
 export const SET_DEFAULT_CALENDAR_TOOL: Tool = {
   name: "google_calendar_set_default",
   description: "Set the default calendar ID for operations",

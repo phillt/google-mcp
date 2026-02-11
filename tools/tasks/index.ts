@@ -1,5 +1,13 @@
 import { type Tool } from "@modelcontextprotocol/sdk/types.js";
 
+const accountIdProperty = {
+  accountId: {
+    type: "string",
+    description:
+      "Email of the Google account to use. If omitted, uses the default account.",
+  },
+};
+
 export const SET_DEFAULT_TASKLIST_TOOL: Tool = {
   name: "google_tasks_set_default_list",
   description: "Set the default task list ID for operations",

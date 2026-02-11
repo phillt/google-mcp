@@ -1,5 +1,13 @@
 import { type Tool } from "@modelcontextprotocol/sdk/types.js";
 
+const accountIdProperty = {
+  accountId: {
+    type: "string",
+    description:
+      "Email of the Google account to use. If omitted, uses the default account.",
+  },
+};
+
 export const LIST_FILES_TOOL: Tool = {
   name: "google_drive_list_files",
   description: "List files from Google Drive",

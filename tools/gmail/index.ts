@@ -1,11 +1,21 @@
 import { type Tool } from "@modelcontextprotocol/sdk/types.js";
 
+const accountIdProperty = {
+  accountId: {
+    type: "string",
+    description:
+      "Email of the Google account to use. If omitted, uses the default account.",
+  },
+};
+
 export const LIST_LABELS_TOOL: Tool = {
   name: "google_gmail_list_labels",
   description: "List all available Gmail labels",
   inputSchema: {
     type: "object",
-    properties: {},
+    properties: {
+      ...accountIdProperty,
+    },
   },
 };
 

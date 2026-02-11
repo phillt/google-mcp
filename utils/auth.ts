@@ -323,71 +323,37 @@ export async function initiateOAuthFlow(scopes?: string[]): Promise<void> {
 }
 
 export function generateOAuthConsentUrl(scopes?: string[]): string {
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  const redirectUri =
-    process.env.GOOGLE_OAUTH_REDIRECT_URI || "http://localhost:3001";
+  const oAuth2Client = createOAuth2Client();
 
-  if (!clientId || !clientSecret) {
-    throw new Error(
-      "OAuth client ID and secret are required in environment variables"
-    );
-  }
-
-  const oauth2Client = new google.auth.OAuth2(
-    clientId,
-    clientSecret,
-    redirectUri
-  );
-
-  return oauth2Client.generateAuthUrl({
+  return oAuth2Client.generateAuthUrl({
     access_type: "offline",
-    scope: scopes || [
-      "https://www.googleapis.com/auth/gmail.modify",
-      "https://www.googleapis.com/auth/gmail.readonly",
-      "https://www.googleapis.com/auth/drive",
-      "https://www.googleapis.com/auth/calendar",
-      "https://www.googleapis.com/auth/tasks",
-    ],
+    scope: scopes || DEFAULT_SCOPES,
     prompt: "consent",
   });
 }
 
 export async function handleOAuthCallback(code: string): Promise<void> {
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  const redirectUri =
-    process.env.GOOGLE_OAUTH_REDIRECT_URI || "http://localhost:3001";
   const tokenPath = process.env.GOOGLE_OAUTH_TOKEN_PATH;
 
-  if (!clientId || !clientSecret || !tokenPath) {
+  if (!tokenPath) {
     throw new Error(
       "OAuth client ID, secret, and token path are required in environment variables"
     );
   }
 
-  const oauth2Client = new google.auth.OAuth2(
-    clientId,
-    clientSecret,
-    redirectUri
-  );
-
-  const { tokens } = await oauth2Client.getToken(code);
+  const oAuth2Client = createOAuth2Client();
+  const { tokens } = await oAuth2Client.getToken(code);
   saveTokensToFile(tokens, tokenPath);
 }
 
 export async function refreshTokens(): Promise<string> {
-  const oauthClientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const oauthClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
   const oauthTokenPath = process.env.GOOGLE_OAUTH_TOKEN_PATH
     ? path.normalize(process.env.GOOGLE_OAUTH_TOKEN_PATH)
     : undefined;
-  const redirectUri =
-    process.env.GOOGLE_OAUTH_REDIRECT_URI || "http://localhost:3001";
 
-  if (!oauthClientId || !oauthClientSecret || !oauthTokenPath) {
+  if (!oauthTokenPath) {
     throw new Error(
-      "OAuth client ID, secret, and token path are required for token refresh"
+      "OAuth token path is required for token refresh"
     );
   }
 
@@ -399,13 +365,7 @@ export async function refreshTokens(): Promise<string> {
       throw new Error("No refresh token available. Please re-authenticate.");
     }
 
-    // Create OAuth2 client and set credentials
-    const oAuth2Client = new google.auth.OAuth2(
-      oauthClientId,
-      oauthClientSecret,
-      redirectUri
-    );
-
+    const oAuth2Client = createOAuth2Client();
     oAuth2Client.setCredentials(currentTokens);
 
     // Refresh the access token

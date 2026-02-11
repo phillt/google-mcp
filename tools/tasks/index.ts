@@ -18,6 +18,7 @@ export const SET_DEFAULT_TASKLIST_TOOL: Tool = {
         type: "string",
         description: "The ID of the task list to set as default",
       },
+      ...accountIdProperty,
     },
     required: ["taskListId"],
   },
@@ -28,7 +29,9 @@ export const LIST_TASKLISTS_TOOL: Tool = {
   description: "List all available task lists",
   inputSchema: {
     type: "object",
-    properties: {},
+    properties: {
+      ...accountIdProperty,
+    },
   },
 };
 
@@ -47,6 +50,7 @@ export const LIST_TASKS_TOOL: Tool = {
         type: "boolean",
         description: "Whether to include completed tasks",
       },
+      ...accountIdProperty,
     },
   },
 };
@@ -66,6 +70,7 @@ export const GET_TASK_TOOL: Tool = {
         description:
           "ID of the task list the task belongs to (uses default if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["taskId"],
   },
@@ -95,6 +100,7 @@ export const CREATE_TASK_TOOL: Tool = {
         description:
           "ID of the task list to create the task in (uses default if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["title"],
   },
@@ -131,6 +137,7 @@ export const UPDATE_TASK_TOOL: Tool = {
         description:
           "ID of the task list the task belongs to (uses default if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["taskId"],
   },
@@ -151,6 +158,7 @@ export const COMPLETE_TASK_TOOL: Tool = {
         description:
           "ID of the task list the task belongs to (uses default if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["taskId"],
   },
@@ -171,6 +179,7 @@ export const DELETE_TASK_TOOL: Tool = {
         description:
           "ID of the task list the task belongs to (uses default if not specified)",
       },
+      ...accountIdProperty,
     },
     required: ["taskId"],
   },
@@ -186,6 +195,7 @@ export const CREATE_TASKLIST_TOOL: Tool = {
         type: "string",
         description: "Title of the new task list",
       },
+      ...accountIdProperty,
     },
     required: ["title"],
   },
@@ -201,6 +211,7 @@ export const DELETE_TASKLIST_TOOL: Tool = {
         type: "string",
         description: "ID of the task list to delete",
       },
+      ...accountIdProperty,
     },
     required: ["taskListId"],
   },

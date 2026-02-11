@@ -4,7 +4,7 @@ import { handleOAuthCallback } from "./auth";
 
 const DEFAULT_PORT = process.env.PORT || 3001;
 
-export async function startOAuthServer(): Promise<void> {
+export async function startOAuthServer(onCallback?: (code: string) => Promise<void>): Promise<void> {
   let serverClosed = false;
   let timeoutId: NodeJS.Timeout | null = null;
   return new Promise((resolve, reject) => {
@@ -22,7 +22,11 @@ export async function startOAuthServer(): Promise<void> {
 
         if (code) {
           // Handle the OAuth callback with the received code
-          await handleOAuthCallback(code);
+          if (onCallback) {
+            await onCallback(code);
+          } else {
+            await handleOAuthCallback(code);
+          }
 
           // Send success page to the user
           res.writeHead(200, { "Content-Type": "text/html" });

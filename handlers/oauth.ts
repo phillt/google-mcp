@@ -1,42 +1,38 @@
-import { createAuthClient, refreshTokens, reauthenticate } from "../utils/auth";
+import {
+  refreshAccountTokens,
+  removeAccountTokens,
+  initiateOAuthFlowForAccount,
+  createAuthClientForAccount,
+} from "../utils/auth";
 import { isRefreshTokensArgs, isReauthenticateArgs } from "../utils/helper";
-import GoogleCalendar from "../utils/calendar";
-import GoogleGmail from "../utils/gmail";
-import GoogleDrive from "../utils/drive";
-import GoogleTasks from "../utils/tasks";
+import { AccountRegistry } from "../utils/account-registry";
 
 export async function handleOauthRefreshTokens(
   args: any,
-  {
-    setGoogleCalendarInstance,
-    setGoogleGmailInstance,
-    setGoogleDriveInstance,
-    setGoogleTasksInstance,
-  }: {
-    setGoogleCalendarInstance: (instance: GoogleCalendar) => void;
-    setGoogleGmailInstance: (instance: GoogleGmail) => void;
-    setGoogleDriveInstance: (instance: GoogleDrive) => void;
-    setGoogleTasksInstance: (instance: GoogleTasks) => void;
-  }
+  registry: AccountRegistry
 ) {
   if (!isRefreshTokensArgs(args)) {
     throw new Error("Invalid arguments for google_oauth_refresh_tokens");
   }
+
   try {
-    const result = await refreshTokens();
+    const accountId = args.accountId || registry.getDefaultAccountId();
+    if (!accountId) {
+      throw new Error("No account specified and no default account set.");
+    }
+
+    const tokensDir = registry.getTokensDir();
+    const { message } = await refreshAccountTokens(accountId, tokensDir);
 
     // Re-initialize services with new tokens
-    const authClient = await createAuthClient();
-    setGoogleCalendarInstance(new GoogleCalendar(authClient));
-    setGoogleGmailInstance(new GoogleGmail(authClient));
-    setGoogleDriveInstance(new GoogleDrive(authClient));
-    setGoogleTasksInstance(new GoogleTasks(authClient));
+    const authClient = await createAuthClientForAccount(accountId, tokensDir);
+    registry.addAccount(accountId, authClient);
 
     return {
       content: [
         {
           type: "text",
-          text: result + "\nServices re-initialized with refreshed tokens.",
+          text: message + "\nServices re-initialized with refreshed tokens.",
         },
       ],
       isError: false,
@@ -58,36 +54,34 @@ export async function handleOauthRefreshTokens(
 
 export async function handleOauthReauthenticate(
   args: any,
-  {
-    setGoogleCalendarInstance,
-    setGoogleGmailInstance,
-    setGoogleDriveInstance,
-    setGoogleTasksInstance,
-  }: {
-    setGoogleCalendarInstance: (instance: GoogleCalendar) => void;
-    setGoogleGmailInstance: (instance: GoogleGmail) => void;
-    setGoogleDriveInstance: (instance: GoogleDrive) => void;
-    setGoogleTasksInstance: (instance: GoogleTasks) => void;
-  }
+  registry: AccountRegistry
 ) {
   if (!isReauthenticateArgs(args)) {
     throw new Error("Invalid arguments for google_oauth_reauthenticate");
   }
-  try {
-    const result = await reauthenticate();
 
-    // Re-initialize services with new tokens
-    const authClient = await createAuthClient();
-    setGoogleCalendarInstance(new GoogleCalendar(authClient));
-    setGoogleGmailInstance(new GoogleGmail(authClient));
-    setGoogleDriveInstance(new GoogleDrive(authClient));
-    setGoogleTasksInstance(new GoogleTasks(authClient));
+  try {
+    const accountId = args.accountId || registry.getDefaultAccountId();
+    const tokensDir = registry.getTokensDir();
+
+    // Remove existing tokens if we know the account
+    if (accountId) {
+      removeAccountTokens(accountId, tokensDir);
+      registry.removeAccount(accountId);
+    }
+
+    // Initiate fresh OAuth flow
+    const email = await initiateOAuthFlowForAccount(tokensDir);
+
+    // Create auth client and add to registry
+    const authClient = await createAuthClientForAccount(email, tokensDir);
+    registry.addAccount(email, authClient);
 
     return {
       content: [
         {
           type: "text",
-          text: result + "\nServices re-initialized with fresh authentication.",
+          text: `Re-authentication completed for ${email}. Services re-initialized with fresh authentication.`,
         },
       ],
       isError: false,

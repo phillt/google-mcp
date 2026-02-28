@@ -6,6 +6,7 @@ import {
 import tools from "./tools/index";
 import { getTokensDir, migrateTokenFile } from "./utils/auth";
 import { AccountRegistry } from "./utils/account-registry";
+import { BUILD_HASH, BUILD_TIME } from "./utils/build-info";
 
 // Import handlers
 import * as calendarHandlers from "./handlers/calendar";
@@ -22,7 +23,7 @@ export function createGoogleMcpServer() {
 
   // Initialize the MCP server
   const server = new Server(
-    { name: "Google MCP Server", version: "0.0.1" },
+    { name: "Google MCP Server", version: BUILD_HASH },
     { capabilities: { tools: {} } }
   );
 
@@ -37,7 +38,27 @@ export function createGoogleMcpServer() {
       const { name, arguments: args } = request.params;
       if (!args) throw new Error("No arguments provided");
 
-      // Account management tools (don't require initialization)
+      // Server info tool (no auth required)
+      if (name === "google_server_info") {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  buildHash: BUILD_HASH,
+                  buildTime: BUILD_TIME,
+                  toolCount: tools.length,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
+
+      // Account management tools (don't require initialization, no account wrapping)
       if (name === "google_account_authenticate") {
         return await accountHandlers.handleAccountAuthenticate(args, registry);
       }

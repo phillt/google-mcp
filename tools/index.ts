@@ -4,8 +4,12 @@ import { gmailTools } from "./gmail/index";
 import { driveTools } from "./drive/index";
 import { tasksTools } from "./tasks/index";
 import { accountTools } from "./account/index";
+import { serverTools } from "./server/index";
 
 const tools = [
+  // Server tools
+  ...serverTools,
+
   // Account management tools
   ...accountTools,
 

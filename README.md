@@ -23,18 +23,12 @@ Click below for one-click install with `.mcpb`:
 {
   "mcpServers": {
     "google-mcp": {
-      "command": "bunx",
-      "args": ["--no-cache", "google-mcp@latest"],
+      "command": "node",
+      "args": ["/home/philllt/gh-apps/google-mcp/dist/index.js"],
       "env": {
-        // Either can be used, but not both
-        // Use OAuth
-        "GOOGLE_OAUTH_CLIENT_ID": "<YOUR_CLIENT_ID>",
-        "GOOGLE_OAUTH_CLIENT_SECRET": "<YOUR_CLIENT_SECRET>",
-        "GOOGLE_OAUTH_TOKEN_PATH": "<PATH_TO_STORE_TOKENS> CAN_BE_ANYWHERE_ON_YOUR_SYSTEM",
-        // Use Service Account
-        "GOOGLE_CLIENT_EMAIL": "<YOUR_SERVICE_ACCOUNT_EMAIL>",
-        "GOOGLE_PRIVATE_KEY": "<YOUR_SERVICE_ACCOUNT_PRIVATE_KEY>",
-        "GMAIL_USER_TO_IMPERSONATE": "<USER_TO_IMPERSONATE>"
+        "GOOGLE_OAUTH_CLIENT_ID": "xxxx",
+        "GOOGLE_OAUTH_CLIENT_SECRET": "xxxs",
+        "GOOGLE_OAUTH_TOKEN_PATH": "~/.config/google-mcp/tokens.json"
       }
     }
   }

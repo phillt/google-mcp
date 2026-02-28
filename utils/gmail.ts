@@ -130,7 +130,7 @@ export default class GoogleGmail {
         format: format,
       });
 
-      const { payload, snippet, labelIds } = response.data;
+      const { payload, snippet, labelIds, threadId, id } = response.data;
       const headers = payload.headers;
 
       // Extract common headers
@@ -165,7 +165,9 @@ export default class GoogleGmail {
       result += `From: ${from}\n`;
       result += `To: ${to}\n`;
       result += `Date: ${date}\n`;
-      result += `Labels: ${labelIds.join(", ")}\n\n`;
+      result += `Labels: ${labelIds.join(", ")}\n`;
+      result += `Thread ID: ${threadId}\n`;
+      result += `Message ID: ${id}\n\n`;
       result += `Snippet: ${snippet}\n\n`;
 
       if (attachments.length > 0) {
@@ -271,7 +273,8 @@ export default class GoogleGmail {
     cc?: string[],
     bcc?: string[],
     isHtml: boolean = false,
-    attachments?: FileAttachment[]
+    attachments?: FileAttachment[],
+    extraHeaders?: Record<string, string>
   ): Promise<string> {
     const boundary = "boundary_" + Math.random().toString(36).substr(2, 9);
     const emailLines = [];
@@ -285,6 +288,11 @@ export default class GoogleGmail {
       emailLines.push(`Bcc: ${bcc.join(", ")}`);
     }
     emailLines.push(`Subject: ${subject}`);
+    if (extraHeaders) {
+      for (const [key, value] of Object.entries(extraHeaders)) {
+        emailLines.push(`${key}: ${value}`);
+      }
+    }
     emailLines.push(`MIME-Version: 1.0`);
     emailLines.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
     emailLines.push("");

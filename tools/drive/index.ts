@@ -4,7 +4,7 @@ const accountIdProperty = {
   accountId: {
     type: "string",
     description:
-      "Email of the Google account to use. If omitted, uses the default account.",
+      "Required. Email address of the Google account to use. Use google_account_list to see authenticated accounts, or google_account_authenticate to add a new account.",
   },
 };
 
@@ -35,6 +35,7 @@ export const LIST_FILES_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -50,7 +51,7 @@ export const GET_FILE_CONTENT_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["fileId"],
+    required: ["fileId", "accountId"],
   },
 };
 
@@ -79,7 +80,7 @@ export const CREATE_FILE_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["name", "content"],
+    required: ["name", "content", "accountId"],
   },
 };
 
@@ -103,7 +104,7 @@ export const UPDATE_FILE_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["fileId", "content"],
+    required: ["fileId", "content", "accountId"],
   },
 };
 
@@ -124,7 +125,7 @@ export const DELETE_FILE_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["fileId"],
+    required: ["fileId", "accountId"],
   },
 };
 
@@ -156,7 +157,7 @@ export const SHARE_FILE_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["fileId", "emailAddress"],
+    required: ["fileId", "emailAddress", "accountId"],
   },
 };
 

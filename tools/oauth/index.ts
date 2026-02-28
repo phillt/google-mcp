@@ -9,9 +9,10 @@ export const REFRESH_TOKENS_TOOL: Tool = {
       accountId: {
         type: "string",
         description:
-          "Email of the Google account to refresh tokens for. If omitted, refreshes the default account.",
+          "Required. Email address of the Google account to refresh tokens for. Use google_account_list to see authenticated accounts.",
       },
     },
+    required: ["accountId"],
   },
 };
 
@@ -25,9 +26,10 @@ export const REAUTHENTICATE_TOOL: Tool = {
       accountId: {
         type: "string",
         description:
-          "Email of the Google account to re-authenticate. If omitted, re-authenticates the default account.",
+          "Required. Email address of the Google account to re-authenticate. Use google_account_list to see authenticated accounts.",
       },
     },
+    required: ["accountId"],
   },
 };
 

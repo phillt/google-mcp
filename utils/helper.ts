@@ -1,20 +1,20 @@
 // Validation functions for Google Tools arguments.. Just necessary thing
 
-// Helper: check optional accountId field
-function hasValidOptionalAccountId(args: any): boolean {
-  return args.accountId === undefined || typeof args.accountId === "string";
+// Helper: check required accountId field
+function hasRequiredAccountId(args: any): boolean {
+  return typeof args.accountId === "string" && args.accountId.length > 0;
 }
 
 export function isSetDefaultCalendarArgs(
   args: any
-): args is { calendarId: string; accountId?: string } {
-  return args && typeof args.calendarId === "string" && hasValidOptionalAccountId(args);
+): args is { calendarId: string; accountId: string } {
+  return args && typeof args.calendarId === "string" && hasRequiredAccountId(args);
 }
 
-export function isListCalendarsArgs(args: any): args is { accountId?: string } {
+export function isListCalendarsArgs(args: any): args is { accountId: string } {
   return (
     args &&
-    hasValidOptionalAccountId(args) &&
+    hasRequiredAccountId(args) &&
     Object.keys(args).every((k) => k === "accountId")
   );
 }
@@ -29,7 +29,7 @@ export function isCreateEventArgs(args: any): args is {
   colorId?: string;
   attendees?: string[];
   recurrence?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -42,7 +42,7 @@ export function isCreateEventArgs(args: any): args is {
     (args.colorId === undefined || typeof args.colorId === "string") &&
     (args.recurrence === undefined || typeof args.recurrence === "string") &&
     (args.attendees === undefined || Array.isArray(args.attendees)) &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -53,7 +53,7 @@ export function isGetEventsArgs(args: any): args is {
   timeMax?: string;
   q?: string;
   showDeleted?: boolean;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -63,20 +63,20 @@ export function isGetEventsArgs(args: any): args is {
     (args.timeMax === undefined || typeof args.timeMax === "string") &&
     (args.q === undefined || typeof args.q === "string") &&
     (args.showDeleted === undefined || typeof args.showDeleted === "boolean") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isGetEventArgs(args: any): args is {
   eventId: string;
   calendarId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.eventId === "string" &&
     (args.calendarId === undefined || typeof args.calendarId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -91,7 +91,7 @@ export function isUpdateEventArgs(args: any): args is {
   attendees?: string[];
   recurrence?: string;
   calendarId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -105,20 +105,20 @@ export function isUpdateEventArgs(args: any): args is {
     (args.recurrence === undefined || typeof args.recurrence === "string") &&
     (args.attendees === undefined || Array.isArray(args.attendees)) &&
     (args.calendarId === undefined || typeof args.calendarId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isDeleteEventArgs(args: any): args is {
   eventId: string;
   calendarId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.eventId === "string" &&
     (args.calendarId === undefined || typeof args.calendarId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -127,7 +127,7 @@ export function isFindFreeTimeArgs(args: any): args is {
   endDate: string;
   duration: number;
   calendarIds?: string[];
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -135,15 +135,15 @@ export function isFindFreeTimeArgs(args: any): args is {
     typeof args.endDate === "string" &&
     typeof args.duration === "number" &&
     (args.calendarIds === undefined || Array.isArray(args.calendarIds)) &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 // Gmail validation functions
-export function isListLabelsArgs(args: any): args is { accountId?: string } {
+export function isListLabelsArgs(args: any): args is { accountId: string } {
   return (
     args &&
-    hasValidOptionalAccountId(args) &&
+    hasRequiredAccountId(args) &&
     Object.keys(args).every((k) => k === "accountId")
   );
 }
@@ -152,40 +152,40 @@ export function isListEmailsArgs(args: any): args is {
   labelIds?: string[];
   maxResults?: number;
   query?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     (args.labelIds === undefined || Array.isArray(args.labelIds)) &&
     (args.maxResults === undefined || typeof args.maxResults === "number") &&
     (args.query === undefined || typeof args.query === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isGetEmailArgs(args: any): args is {
   messageId: string;
   format?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.messageId === "string" &&
     (args.format === undefined || typeof args.format === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isGetEmailByIndexArgs(args: any): args is {
   index: number;
   format?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.index === "number" &&
     (args.format === undefined || typeof args.format === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -202,7 +202,7 @@ export function isSendEmailArgs(args: any): args is {
     filename?: string;
     mimeType?: string;
   }>;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     typeof args === "object" &&
@@ -213,7 +213,7 @@ export function isSendEmailArgs(args: any): args is {
     (args.bcc === undefined || Array.isArray(args.bcc)) &&
     (args.isHtml === undefined || typeof args.isHtml === "boolean") &&
     (args.attachments === undefined || Array.isArray(args.attachments)) &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -230,7 +230,7 @@ export function isDraftEmailArgs(args: any): args is {
     filename?: string;
     mimeType?: string;
   }>;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     typeof args === "object" &&
@@ -241,20 +241,20 @@ export function isDraftEmailArgs(args: any): args is {
     (args.bcc === undefined || Array.isArray(args.bcc)) &&
     (args.isHtml === undefined || typeof args.isHtml === "boolean") &&
     (args.attachments === undefined || Array.isArray(args.attachments)) &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isDeleteEmailArgs(args: any): args is {
   messageId: string;
   permanently?: boolean;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.messageId === "string" &&
     (args.permanently === undefined || typeof args.permanently === "boolean") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -262,14 +262,14 @@ export function isModifyLabelsArgs(args: any): args is {
   messageId: string;
   addLabelIds?: string[];
   removeLabelIds?: string[];
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.messageId === "string" &&
     (args.addLabelIds === undefined || Array.isArray(args.addLabelIds)) &&
     (args.removeLabelIds === undefined || Array.isArray(args.removeLabelIds)) &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -279,7 +279,7 @@ export function isListFilesArgs(args: any): args is {
   pageSize?: number;
   orderBy?: string;
   fields?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -287,15 +287,15 @@ export function isListFilesArgs(args: any): args is {
     (args.pageSize === undefined || typeof args.pageSize === "number") &&
     (args.orderBy === undefined || typeof args.orderBy === "string") &&
     (args.fields === undefined || typeof args.fields === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isGetFileContentArgs(args: any): args is {
   fileId: string;
-  accountId?: string;
+  accountId: string;
 } {
-  return args && typeof args.fileId === "string" && hasValidOptionalAccountId(args);
+  return args && typeof args.fileId === "string" && hasRequiredAccountId(args);
 }
 
 export function isCreateFileArgs(args: any): args is {
@@ -303,7 +303,7 @@ export function isCreateFileArgs(args: any): args is {
   content: string;
   mimeType?: string;
   folderId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -311,7 +311,7 @@ export function isCreateFileArgs(args: any): args is {
     typeof args.content === "string" &&
     (args.mimeType === undefined || typeof args.mimeType === "string") &&
     (args.folderId === undefined || typeof args.folderId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -319,27 +319,27 @@ export function isUpdateFileArgs(args: any): args is {
   fileId: string;
   content: string;
   mimeType?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.fileId === "string" &&
     typeof args.content === "string" &&
     (args.mimeType === undefined || typeof args.mimeType === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isDeleteFileArgs(args: any): args is {
   fileId: string;
   permanently?: boolean;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.fileId === "string" &&
     (args.permanently === undefined || typeof args.permanently === "boolean") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -349,7 +349,7 @@ export function isShareFileArgs(args: any): args is {
   role?: string;
   sendNotification?: boolean;
   message?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -359,22 +359,22 @@ export function isShareFileArgs(args: any): args is {
     (args.sendNotification === undefined ||
       typeof args.sendNotification === "boolean") &&
     (args.message === undefined || typeof args.message === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 // Google Tasks validation functions
 export function isSetDefaultTaskListArgs(args: any): args is {
   taskListId: string;
-  accountId?: string;
+  accountId: string;
 } {
-  return args && typeof args.taskListId === "string" && hasValidOptionalAccountId(args);
+  return args && typeof args.taskListId === "string" && hasRequiredAccountId(args);
 }
 
-export function isListTaskListsArgs(args: any): args is { accountId?: string } {
+export function isListTaskListsArgs(args: any): args is { accountId: string } {
   return (
     args &&
-    hasValidOptionalAccountId(args) &&
+    hasRequiredAccountId(args) &&
     Object.keys(args).every((k) => k === "accountId")
   );
 }
@@ -382,27 +382,27 @@ export function isListTaskListsArgs(args: any): args is { accountId?: string } {
 export function isListTasksArgs(args: any): args is {
   taskListId?: string;
   showCompleted?: boolean;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
     (args.showCompleted === undefined ||
       typeof args.showCompleted === "boolean") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isGetTaskArgs(args: any): args is {
   taskId: string;
   taskListId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.taskId === "string" &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -411,7 +411,7 @@ export function isCreateTaskArgs(args: any): args is {
   notes?: string;
   due?: string;
   taskListId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
@@ -419,7 +419,7 @@ export function isCreateTaskArgs(args: any): args is {
     (args.notes === undefined || typeof args.notes === "string") &&
     (args.due === undefined || typeof args.due === "string") &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
@@ -430,7 +430,7 @@ export function isUpdateTaskArgs(args: any): args is {
   due?: string;
   status?: string;
   taskListId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&

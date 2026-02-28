@@ -4,7 +4,7 @@ const accountIdProperty = {
   accountId: {
     type: "string",
     description:
-      "Email of the Google account to use. If omitted, uses the default account.",
+      "Required. Email address of the Google account to use. Use google_account_list to see authenticated accounts, or google_account_authenticate to add a new account.",
   },
 };
 
@@ -16,6 +16,7 @@ export const LIST_LABELS_TOOL: Tool = {
     properties: {
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -40,6 +41,7 @@ export const LIST_EMAILS_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -60,7 +62,7 @@ export const GET_EMAIL_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["messageId"],
+    required: ["messageId", "accountId"],
   },
 };
 
@@ -81,7 +83,7 @@ export const GET_EMAIL_BY_INDEX_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["index"],
+    required: ["index", "accountId"],
   },
 };
 
@@ -151,7 +153,7 @@ export const SEND_EMAIL_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["to", "subject", "body"],
+    required: ["to", "subject", "body", "accountId"],
   },
 };
 
@@ -221,7 +223,7 @@ export const DRAFT_EMAIL_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["to", "subject", "body"],
+    required: ["to", "subject", "body", "accountId"],
   },
 };
 
@@ -241,7 +243,7 @@ export const DELETE_EMAIL_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["messageId"],
+    required: ["messageId", "accountId"],
   },
 };
 
@@ -267,7 +269,7 @@ export const MODIFY_LABELS_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["messageId"],
+    required: ["messageId", "accountId"],
   },
 };
 

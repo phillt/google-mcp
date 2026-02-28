@@ -4,7 +4,7 @@ const accountIdProperty = {
   accountId: {
     type: "string",
     description:
-      "Email of the Google account to use. If omitted, uses the default account.",
+      "Required. Email address of the Google account to use. Use google_account_list to see authenticated accounts, or google_account_authenticate to add a new account.",
   },
 };
 
@@ -20,7 +20,7 @@ export const SET_DEFAULT_CALENDAR_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["calendarId"],
+    required: ["calendarId", "accountId"],
   },
 };
 
@@ -32,6 +32,7 @@ export const LIST_CALENDARS_TOOL: Tool = {
     properties: {
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -84,7 +85,7 @@ export const CREATE_EVENT_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["summary", "start", "end"],
+    required: ["summary", "start", "end", "accountId"],
   },
 };
 
@@ -121,6 +122,7 @@ export const GET_EVENTS_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -141,7 +143,7 @@ export const GET_EVENT_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["eventId"],
+    required: ["eventId", "accountId"],
   },
 };
 
@@ -196,7 +198,7 @@ export const UPDATE_EVENT_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["eventId"],
+    required: ["eventId", "accountId"],
   },
 };
 
@@ -217,7 +219,7 @@ export const DELETE_EVENT_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["eventId"],
+    required: ["eventId", "accountId"],
   },
 };
 
@@ -247,7 +249,7 @@ export const FIND_FREE_TIME_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["startDate", "endDate", "duration"],
+    required: ["startDate", "endDate", "duration", "accountId"],
   },
 };
 

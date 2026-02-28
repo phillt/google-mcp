@@ -4,7 +4,7 @@ const accountIdProperty = {
   accountId: {
     type: "string",
     description:
-      "Email of the Google account to use. If omitted, uses the default account.",
+      "Required. Email address of the Google account to use. Use google_account_list to see authenticated accounts, or google_account_authenticate to add a new account.",
   },
 };
 
@@ -20,7 +20,7 @@ export const SET_DEFAULT_TASKLIST_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskListId"],
+    required: ["taskListId", "accountId"],
   },
 };
 
@@ -32,6 +32,7 @@ export const LIST_TASKLISTS_TOOL: Tool = {
     properties: {
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -52,6 +53,7 @@ export const LIST_TASKS_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
+    required: ["accountId"],
   },
 };
 
@@ -72,7 +74,7 @@ export const GET_TASK_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskId"],
+    required: ["taskId", "accountId"],
   },
 };
 
@@ -102,7 +104,7 @@ export const CREATE_TASK_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["title"],
+    required: ["title", "accountId"],
   },
 };
 
@@ -139,7 +141,7 @@ export const UPDATE_TASK_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskId"],
+    required: ["taskId", "accountId"],
   },
 };
 
@@ -160,7 +162,7 @@ export const COMPLETE_TASK_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskId"],
+    required: ["taskId", "accountId"],
   },
 };
 
@@ -181,7 +183,7 @@ export const DELETE_TASK_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskId"],
+    required: ["taskId", "accountId"],
   },
 };
 
@@ -197,7 +199,7 @@ export const CREATE_TASKLIST_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["title"],
+    required: ["title", "accountId"],
   },
 };
 
@@ -213,7 +215,7 @@ export const DELETE_TASKLIST_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["taskListId"],
+    required: ["taskListId", "accountId"],
   },
 };
 

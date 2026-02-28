@@ -440,77 +440,105 @@ export function isUpdateTaskArgs(args: any): args is {
     (args.due === undefined || typeof args.due === "string") &&
     (args.status === undefined || typeof args.status === "string") &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isCompleteTaskArgs(args: any): args is {
   taskId: string;
   taskListId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.taskId === "string" &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isDeleteTaskArgs(args: any): args is {
   taskId: string;
   taskListId?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     args &&
     typeof args.taskId === "string" &&
     (args.taskListId === undefined || typeof args.taskListId === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 
 export function isCreateTaskListArgs(args: any): args is {
   title: string;
-  accountId?: string;
+  accountId: string;
 } {
-  return args && typeof args.title === "string" && hasValidOptionalAccountId(args);
+  return args && typeof args.title === "string" && hasRequiredAccountId(args);
 }
 
 export function isDeleteTaskListArgs(args: any): args is {
   taskListId: string;
-  accountId?: string;
+  accountId: string;
 } {
-  return args && typeof args.taskListId === "string" && hasValidOptionalAccountId(args);
+  return args && typeof args.taskListId === "string" && hasRequiredAccountId(args);
 }
 
 // OAuth validation functions
-export function isRefreshTokensArgs(args: any): args is { accountId?: string } {
+export function isRefreshTokensArgs(args: any): args is { accountId: string } {
   return (
     args &&
-    hasValidOptionalAccountId(args) &&
+    hasRequiredAccountId(args) &&
     Object.keys(args).every((k) => k === "accountId")
   );
 }
 
-export function isReauthenticateArgs(args: any): args is { accountId?: string } {
+export function isReauthenticateArgs(args: any): args is { accountId: string } {
   return (
     args &&
-    hasValidOptionalAccountId(args) &&
+    hasRequiredAccountId(args) &&
     Object.keys(args).every((k) => k === "accountId")
+  );
+}
+
+export function isReplyEmailArgs(args: any): args is {
+  messageId: string;
+  body: string;
+  to?: string[];
+  cc?: string[];
+  bcc?: string[];
+  isHtml?: boolean;
+  attachments?: Array<{
+    filePath?: string;
+    driveFileId?: string;
+    filename?: string;
+    mimeType?: string;
+  }>;
+  accountId: string;
+} {
+  return (
+    typeof args === "object" &&
+    typeof args.messageId === "string" &&
+    typeof args.body === "string" &&
+    (args.to === undefined || Array.isArray(args.to)) &&
+    (args.cc === undefined || Array.isArray(args.cc)) &&
+    (args.bcc === undefined || Array.isArray(args.bcc)) &&
+    (args.isHtml === undefined || typeof args.isHtml === "boolean") &&
+    (args.attachments === undefined || Array.isArray(args.attachments)) &&
+    hasRequiredAccountId(args)
   );
 }
 
 export function isDownloadAttachmentsArgs(args: any): args is {
   messageId: string;
   downloadPath?: string;
-  accountId?: string;
+  accountId: string;
 } {
   return (
     typeof args === "object" &&
     typeof args.messageId === "string" &&
     (args.downloadPath === undefined || typeof args.downloadPath === "string") &&
-    hasValidOptionalAccountId(args)
+    hasRequiredAccountId(args)
   );
 }
 

@@ -6,6 +6,7 @@ import {
   isGetEmailByIndexArgs,
   isSendEmailArgs,
   isDraftEmailArgs,
+  isReplyEmailArgs,
   isDeleteEmailArgs,
   isModifyLabelsArgs,
   isDownloadAttachmentsArgs,
@@ -127,6 +128,52 @@ export async function handleGmailDraftEmail(
     to,
     subject,
     body,
+    cc,
+    bcc,
+    isHtml,
+    attachments
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailReplyEmail(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isReplyEmailArgs(args)) {
+    throw new Error("Invalid arguments for google_gmail_reply_email");
+  }
+  const { messageId, body, to, cc, bcc, isHtml, attachments } = args;
+  const result = await googleGmailInstance.replyEmail(
+    messageId,
+    body,
+    to,
+    cc,
+    bcc,
+    isHtml,
+    attachments
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailDraftReply(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isReplyEmailArgs(args)) {
+    throw new Error("Invalid arguments for google_gmail_draft_reply");
+  }
+  const { messageId, body, to, cc, bcc, isHtml, attachments } = args;
+  const result = await googleGmailInstance.draftReply(
+    messageId,
+    body,
+    to,
     cc,
     bcc,
     isHtml,

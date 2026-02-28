@@ -738,4 +738,235 @@ export default class GoogleGmail {
       );
     }
   }
+
+  private async getReplyContext(messageId: string) {
+    const response = await this.gmail.users.messages.get({
+      userId: "me",
+      id: messageId,
+      format: "metadata",
+      metadataHeaders: ["Subject", "From", "Message-ID", "References"],
+    });
+
+    const headers = response.data.payload.headers;
+    const subject =
+      headers.find((h: any) => h.name === "Subject")?.value || "";
+    const from = headers.find((h: any) => h.name === "From")?.value || "";
+    const originalMessageId =
+      headers.find((h: any) => h.name === "Message-ID")?.value || "";
+    const references =
+      headers.find((h: any) => h.name === "References")?.value || "";
+    const threadId = response.data.threadId;
+
+    return { threadId, subject, from, originalMessageId, references };
+  }
+
+  async replyEmail(
+    messageId: string,
+    body: string,
+    to?: string[],
+    cc?: string[],
+    bcc?: string[],
+    isHtml: boolean = false,
+    attachments?: Attachment[]
+  ) {
+    try {
+      const context = await this.getReplyContext(messageId);
+
+      // Build threading headers
+      const extraHeaders: Record<string, string> = {};
+      if (context.originalMessageId) {
+        extraHeaders["In-Reply-To"] = context.originalMessageId;
+        extraHeaders["References"] = context.references
+          ? `${context.references} ${context.originalMessageId}`
+          : context.originalMessageId;
+      }
+
+      // Default to replying to original sender
+      const recipients = to && to.length > 0 ? to : [context.from];
+
+      // Add Re: prefix if not already present
+      const subject = context.subject.startsWith("Re: ")
+        ? context.subject
+        : `Re: ${context.subject}`;
+
+      let processedAttachments: FileAttachment[] = [];
+      if (attachments && attachments.length > 0) {
+        processedAttachments = await this.processAttachments(attachments);
+      }
+
+      let email: string;
+
+      if (processedAttachments.length > 0) {
+        email = await this.createMultipartEmail(
+          recipients,
+          subject,
+          body,
+          cc,
+          bcc,
+          isHtml,
+          processedAttachments,
+          extraHeaders
+        );
+      } else {
+        const emailLines = [];
+        emailLines.push(`To: ${recipients.join(", ")}`);
+        if (cc && cc.length) {
+          emailLines.push(`Cc: ${cc.join(", ")}`);
+        }
+        if (bcc && bcc.length) {
+          emailLines.push(`Bcc: ${bcc.join(", ")}`);
+        }
+        emailLines.push(`Subject: ${subject}`);
+        for (const [key, value] of Object.entries(extraHeaders)) {
+          emailLines.push(`${key}: ${value}`);
+        }
+        emailLines.push(
+          `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`
+        );
+        emailLines.push("");
+        emailLines.push(body);
+        email = emailLines.join("\r\n");
+      }
+
+      const encodedEmail = Buffer.from(email)
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+
+      const res = await this.gmail.users.messages.send({
+        userId: "me",
+        requestBody: {
+          raw: encodedEmail,
+          threadId: context.threadId,
+        },
+      });
+
+      let result = `Reply sent successfully. Message ID: ${res.data.id}`;
+      result += `\nThread ID: ${context.threadId}`;
+      if (processedAttachments.length > 0) {
+        result += `\nAttachments: ${processedAttachments.length} file(s) attached`;
+        result += `\nAttachment details:`;
+        processedAttachments.forEach((att, index) => {
+          result += `\n  ${index + 1}. ${att.filename} (${
+            att.mimeType
+          }, ${FileUtils.formatFileSize(att.size)})`;
+        });
+      }
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `Failed to send reply: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async draftReply(
+    messageId: string,
+    body: string,
+    to?: string[],
+    cc?: string[],
+    bcc?: string[],
+    isHtml: boolean = false,
+    attachments?: Attachment[]
+  ) {
+    try {
+      const context = await this.getReplyContext(messageId);
+
+      // Build threading headers
+      const extraHeaders: Record<string, string> = {};
+      if (context.originalMessageId) {
+        extraHeaders["In-Reply-To"] = context.originalMessageId;
+        extraHeaders["References"] = context.references
+          ? `${context.references} ${context.originalMessageId}`
+          : context.originalMessageId;
+      }
+
+      // Default to replying to original sender
+      const recipients = to && to.length > 0 ? to : [context.from];
+
+      // Add Re: prefix if not already present
+      const subject = context.subject.startsWith("Re: ")
+        ? context.subject
+        : `Re: ${context.subject}`;
+
+      let processedAttachments: FileAttachment[] = [];
+      if (attachments && attachments.length > 0) {
+        processedAttachments = await this.processAttachments(attachments);
+      }
+
+      let email: string;
+
+      if (processedAttachments.length > 0) {
+        email = await this.createMultipartEmail(
+          recipients,
+          subject,
+          body,
+          cc,
+          bcc,
+          isHtml,
+          processedAttachments,
+          extraHeaders
+        );
+      } else {
+        const emailLines = [];
+        emailLines.push(`To: ${recipients.join(", ")}`);
+        if (cc && cc.length) {
+          emailLines.push(`Cc: ${cc.join(", ")}`);
+        }
+        if (bcc && bcc.length) {
+          emailLines.push(`Bcc: ${bcc.join(", ")}`);
+        }
+        emailLines.push(`Subject: ${subject}`);
+        for (const [key, value] of Object.entries(extraHeaders)) {
+          emailLines.push(`${key}: ${value}`);
+        }
+        emailLines.push(
+          `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`
+        );
+        emailLines.push("");
+        emailLines.push(body);
+        email = emailLines.join("\r\n");
+      }
+
+      const encodedEmail = Buffer.from(email)
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+
+      const res = await this.gmail.users.drafts.create({
+        userId: "me",
+        requestBody: {
+          message: {
+            raw: encodedEmail,
+            threadId: context.threadId,
+          },
+        },
+      });
+
+      let result = `Reply draft created successfully. Draft ID: ${res.data.id}`;
+      result += `\nThread ID: ${context.threadId}`;
+      if (processedAttachments.length > 0) {
+        result += `\nAttachments: ${processedAttachments.length} file(s) attached`;
+        result += `\nAttachment details:`;
+        processedAttachments.forEach((att, index) => {
+          result += `\n  ${index + 1}. ${att.filename} (${
+            att.mimeType
+          }, ${FileUtils.formatFileSize(att.size)})`;
+        });
+      }
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `Failed to create reply draft: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
 }

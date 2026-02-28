@@ -288,7 +288,123 @@ export const DOWNLOAD_ATTACHMENTS_TOOL: Tool = {
       },
       ...accountIdProperty,
     },
-    required: ["messageId"],
+    required: ["messageId", "accountId"],
+  },
+};
+
+const replyAttachmentsSchema = {
+  type: "array",
+  items: {
+    type: "object",
+    properties: {
+      filePath: {
+        type: "string",
+        description:
+          "Local file path to attach (e.g., '/Users/username/Documents/file.pdf')",
+      },
+      driveFileId: {
+        type: "string",
+        description:
+          "Google Drive file ID to attach (alternative to filePath)",
+      },
+      filename: {
+        type: "string",
+        description:
+          "Custom filename for the attachment (optional, will use original filename if not provided)",
+      },
+      mimeType: {
+        type: "string",
+        description:
+          "MIME type of the attachment (optional, will be auto-detected)",
+      },
+    },
+    oneOf: [{ required: ["filePath"] }, { required: ["driveFileId"] }],
+  },
+  description:
+    "Array of attachments to include with the reply. Provide either filePath for local files or driveFileId for Google Drive files.",
+} as const;
+
+export const REPLY_EMAIL_TOOL: Tool = {
+  name: "google_gmail_reply_email",
+  description:
+    "Reply to an email in-thread. Automatically handles threading (subject, In-Reply-To, References headers). Defaults to replying to the original sender unless 'to' is overridden.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "string",
+        description: "ID of the message being replied to",
+      },
+      body: {
+        type: "string",
+        description: "Reply body content (can be plain text or HTML)",
+      },
+      to: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Override recipients (defaults to original sender if not provided)",
+      },
+      cc: {
+        type: "array",
+        items: { type: "string" },
+        description: "CC recipients email addresses",
+      },
+      bcc: {
+        type: "array",
+        items: { type: "string" },
+        description: "BCC recipients email addresses",
+      },
+      isHtml: {
+        type: "boolean",
+        description: "Whether the body contains HTML",
+      },
+      attachments: replyAttachmentsSchema,
+      ...accountIdProperty,
+    },
+    required: ["messageId", "body", "accountId"],
+  },
+};
+
+export const DRAFT_REPLY_TOOL: Tool = {
+  name: "google_gmail_draft_reply",
+  description:
+    "Create a draft reply to an email in-thread. Automatically handles threading (subject, In-Reply-To, References headers). Defaults to replying to the original sender unless 'to' is overridden.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "string",
+        description: "ID of the message being replied to",
+      },
+      body: {
+        type: "string",
+        description: "Reply body content (can be plain text or HTML)",
+      },
+      to: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Override recipients (defaults to original sender if not provided)",
+      },
+      cc: {
+        type: "array",
+        items: { type: "string" },
+        description: "CC recipients email addresses",
+      },
+      bcc: {
+        type: "array",
+        items: { type: "string" },
+        description: "BCC recipients email addresses",
+      },
+      isHtml: {
+        type: "boolean",
+        description: "Whether the body contains HTML",
+      },
+      attachments: replyAttachmentsSchema,
+      ...accountIdProperty,
+    },
+    required: ["messageId", "body", "accountId"],
   },
 };
 
@@ -299,6 +415,8 @@ export const gmailTools = [
   GET_EMAIL_BY_INDEX_TOOL,
   SEND_EMAIL_TOOL,
   DRAFT_EMAIL_TOOL,
+  REPLY_EMAIL_TOOL,
+  DRAFT_REPLY_TOOL,
   DELETE_EMAIL_TOOL,
   MODIFY_LABELS_TOOL,
   DOWNLOAD_ATTACHMENTS_TOOL,

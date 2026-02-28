@@ -96,182 +96,230 @@ export function createGoogleMcpServer() {
       }
 
       // Resolve the service bundle for the requested account
-      const bundle = registry.getServiceBundle((args as any)?.accountId);
+      const accountId = (args as any)?.accountId;
+      const bundle = registry.getServiceBundle(accountId);
+
+      let handlerResult: { content: any[]; isError?: boolean };
 
       // Route to appropriate handlers
       switch (name) {
         // Calendar tools
         case "google_calendar_set_default":
-          return await calendarHandlers.handleCalendarSetDefault(
+          handlerResult = await calendarHandlers.handleCalendarSetDefault(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_list_calendars":
-          return await calendarHandlers.handleCalendarListCalendars(
+          handlerResult = await calendarHandlers.handleCalendarListCalendars(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_create_event":
-          return await calendarHandlers.handleCalendarCreateEvent(
+          handlerResult = await calendarHandlers.handleCalendarCreateEvent(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_get_events":
-          return await calendarHandlers.handleCalendarGetEvents(
+          handlerResult = await calendarHandlers.handleCalendarGetEvents(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_get_event":
-          return await calendarHandlers.handleCalendarGetEvent(
+          handlerResult = await calendarHandlers.handleCalendarGetEvent(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_update_event":
-          return await calendarHandlers.handleCalendarUpdateEvent(
+          handlerResult = await calendarHandlers.handleCalendarUpdateEvent(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_delete_event":
-          return await calendarHandlers.handleCalendarDeleteEvent(
+          handlerResult = await calendarHandlers.handleCalendarDeleteEvent(
             args,
             bundle.calendar
           );
+          break;
         case "google_calendar_find_free_time":
-          return await calendarHandlers.handleCalendarFindFreeTime(
+          handlerResult = await calendarHandlers.handleCalendarFindFreeTime(
             args,
             bundle.calendar
           );
+          break;
 
         // Gmail tools
         case "google_gmail_list_labels":
-          return await gmailHandlers.handleGmailListLabels(
+          handlerResult = await gmailHandlers.handleGmailListLabels(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_list_emails":
-          return await gmailHandlers.handleGmailListEmails(
+          handlerResult = await gmailHandlers.handleGmailListEmails(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_get_email":
-          return await gmailHandlers.handleGmailGetEmail(
+          handlerResult = await gmailHandlers.handleGmailGetEmail(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_get_email_by_index":
-          return await gmailHandlers.handleGmailGetEmailByIndex(
+          handlerResult = await gmailHandlers.handleGmailGetEmailByIndex(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_send_email":
-          return await gmailHandlers.handleGmailSendEmail(
+          handlerResult = await gmailHandlers.handleGmailSendEmail(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_draft_email":
-          return await gmailHandlers.handleGmailDraftEmail(
+          handlerResult = await gmailHandlers.handleGmailDraftEmail(
             args,
             bundle.gmail
           );
+          break;
+        case "google_gmail_reply_email":
+          handlerResult = await gmailHandlers.handleGmailReplyEmail(
+            args,
+            bundle.gmail
+          );
+          break;
+        case "google_gmail_draft_reply":
+          handlerResult = await gmailHandlers.handleGmailDraftReply(
+            args,
+            bundle.gmail
+          );
+          break;
         case "google_gmail_delete_email":
-          return await gmailHandlers.handleGmailDeleteEmail(
+          handlerResult = await gmailHandlers.handleGmailDeleteEmail(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_modify_labels":
-          return await gmailHandlers.handleGmailModifyLabels(
+          handlerResult = await gmailHandlers.handleGmailModifyLabels(
             args,
             bundle.gmail
           );
+          break;
         case "google_gmail_download_attachments":
-          return await gmailHandlers.handleGmailDownloadAttachments(
+          handlerResult = await gmailHandlers.handleGmailDownloadAttachments(
             args,
             bundle.gmail
           );
+          break;
 
         // Drive tools
         case "google_drive_list_files":
-          return await driveHandlers.handleDriveListFiles(
+          handlerResult = await driveHandlers.handleDriveListFiles(
             args,
             bundle.drive
           );
+          break;
         case "google_drive_get_file_content":
-          return await driveHandlers.handleDriveGetFileContent(
+          handlerResult = await driveHandlers.handleDriveGetFileContent(
             args,
             bundle.drive
           );
+          break;
         case "google_drive_create_file":
-          return await driveHandlers.handleDriveCreateFile(
+          handlerResult = await driveHandlers.handleDriveCreateFile(
             args,
             bundle.drive
           );
+          break;
         case "google_drive_update_file":
-          return await driveHandlers.handleDriveUpdateFile(
+          handlerResult = await driveHandlers.handleDriveUpdateFile(
             args,
             bundle.drive
           );
+          break;
         case "google_drive_delete_file":
-          return await driveHandlers.handleDriveDeleteFile(
+          handlerResult = await driveHandlers.handleDriveDeleteFile(
             args,
             bundle.drive
           );
+          break;
         case "google_drive_share_file":
-          return await driveHandlers.handleDriveShareFile(
+          handlerResult = await driveHandlers.handleDriveShareFile(
             args,
             bundle.drive
           );
+          break;
 
         // Tasks tools
         case "google_tasks_set_default_list":
-          return await tasksHandlers.handleTasksSetDefaultList(
+          handlerResult = await tasksHandlers.handleTasksSetDefaultList(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_list_tasklists":
-          return await tasksHandlers.handleTasksListTasklists(
+          handlerResult = await tasksHandlers.handleTasksListTasklists(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_list_tasks":
-          return await tasksHandlers.handleTasksListTasks(
+          handlerResult = await tasksHandlers.handleTasksListTasks(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_get_task":
-          return await tasksHandlers.handleTasksGetTask(
+          handlerResult = await tasksHandlers.handleTasksGetTask(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_create_task":
-          return await tasksHandlers.handleTasksCreateTask(
+          handlerResult = await tasksHandlers.handleTasksCreateTask(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_update_task":
-          return await tasksHandlers.handleTasksUpdateTask(
+          handlerResult = await tasksHandlers.handleTasksUpdateTask(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_complete_task":
-          return await tasksHandlers.handleTasksCompleteTask(
+          handlerResult = await tasksHandlers.handleTasksCompleteTask(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_delete_task":
-          return await tasksHandlers.handleTasksDeleteTask(
+          handlerResult = await tasksHandlers.handleTasksDeleteTask(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_create_tasklist":
-          return await tasksHandlers.handleTasksCreateTasklist(
+          handlerResult = await tasksHandlers.handleTasksCreateTasklist(
             args,
             bundle.tasks
           );
+          break;
         case "google_tasks_delete_tasklist":
-          return await tasksHandlers.handleTasksDeleteTasklist(
+          handlerResult = await tasksHandlers.handleTasksDeleteTasklist(
             args,
             bundle.tasks
           );
+          break;
 
         default:
           return {

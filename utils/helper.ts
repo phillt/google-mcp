@@ -546,6 +546,36 @@ export function isDownloadAttachmentsArgs(args: any): args is {
   );
 }
 
+export function isBatchModifyLabelsArgs(args: any): args is {
+  messageIds: string[];
+  addLabelIds?: string[];
+  removeLabelIds?: string[];
+  accountId: string;
+} {
+  return (
+    args &&
+    Array.isArray(args.messageIds) &&
+    args.messageIds.length > 0 &&
+    args.messageIds.every((id: any) => typeof id === "string") &&
+    (args.addLabelIds === undefined || Array.isArray(args.addLabelIds)) &&
+    (args.removeLabelIds === undefined || Array.isArray(args.removeLabelIds)) &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isBatchDeleteEmailsArgs(args: any): args is {
+  messageIds: string[];
+  accountId: string;
+} {
+  return (
+    args &&
+    Array.isArray(args.messageIds) &&
+    args.messageIds.length > 0 &&
+    args.messageIds.every((id: any) => typeof id === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
 // Google Sheets validation functions
 export function isGetSpreadsheetArgs(args: any): args is {
   spreadsheetId: string;

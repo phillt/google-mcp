@@ -559,6 +559,76 @@ export default class GoogleGmail {
     }
   }
 
+  async batchModifyLabels(
+    messageIds: string[],
+    addLabelIds?: string[],
+    removeLabelIds?: string[]
+  ) {
+    try {
+      if (!messageIds || messageIds.length === 0) {
+        throw new Error("messageIds array must not be empty");
+      }
+      if (messageIds.length > 1000) {
+        throw new Error(
+          `Too many message IDs (${messageIds.length}). Gmail API allows a maximum of 1000 per batch request.`
+        );
+      }
+
+      await this.gmail.users.messages.batchModify({
+        userId: "me",
+        requestBody: {
+          ids: messageIds,
+          addLabelIds: addLabelIds || [],
+          removeLabelIds: removeLabelIds || [],
+        },
+      });
+
+      let result = `Successfully modified labels for ${messageIds.length} message(s).`;
+      if (addLabelIds && addLabelIds.length > 0) {
+        result += `\nAdded labels: ${addLabelIds.join(", ")}`;
+      }
+      if (removeLabelIds && removeLabelIds.length > 0) {
+        result += `\nRemoved labels: ${removeLabelIds.join(", ")}`;
+      }
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `Failed to batch modify labels: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async batchDeleteEmails(messageIds: string[]) {
+    try {
+      if (!messageIds || messageIds.length === 0) {
+        throw new Error("messageIds array must not be empty");
+      }
+      if (messageIds.length > 1000) {
+        throw new Error(
+          `Too many message IDs (${messageIds.length}). Gmail API allows a maximum of 1000 per batch request.`
+        );
+      }
+
+      await this.gmail.users.messages.batchDelete({
+        userId: "me",
+        requestBody: {
+          ids: messageIds,
+        },
+      });
+
+      return `Permanently deleted ${messageIds.length} message(s). This action cannot be undone.`;
+    } catch (error) {
+      throw new Error(
+        `Failed to batch delete emails: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
   async getEmailAttachments(messageId: string): Promise<EmailAttachment[]> {
     try {
       const response = await this.gmail.users.messages.get({

@@ -225,7 +225,8 @@ export const DELETE_EVENT_TOOL: Tool = {
 
 export const FIND_FREE_TIME_TOOL: Tool = {
   name: "google_calendar_find_free_time",
-  description: "Find available time slots between events",
+  description:
+    "Find available time slots when all specified calendars and attendees are free. Uses the Google FreeBusy API to check availability across multiple people.",
   inputSchema: {
     type: "object",
     properties: {

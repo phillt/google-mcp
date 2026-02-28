@@ -3,8 +3,8 @@
   "name": "google-mcp",
   "display_name": "Google MCP Tools",
   "version": "1.0.0",
-  "description": "A collection of Google-native tools (Gmail, Calendar, Drive, Tasks) for the MCP protocol",
-  "long_description": "This extension provides seamless integration with Google services including Gmail (send/read emails, download attachments), Calendar (manage events), Drive (file operations), and Tasks (task management). Features OAuth management with automatic token refresh and complete re-authentication capabilities.",
+  "description": "A collection of Google-native tools (Gmail, Calendar, Drive, Sheets, Docs, Tasks) for the MCP protocol",
+  "long_description": "This extension provides seamless integration with Google services including Gmail (send/read emails, download attachments), Calendar (manage events), Drive (file operations with Workspace conversion), Sheets (read/write cells, append rows, manage tabs), Docs (read/create/edit documents, find-and-replace), and Tasks (task management). Features OAuth management with automatic token refresh and complete re-authentication capabilities.",
   "author": {
     "name": "Dhruv Vakharwala",
     "url": "https://github.com/vakharwalad23/google-mcp"
@@ -22,6 +22,8 @@
     "gmail",
     "calendar",
     "drive",
+    "sheets",
+    "docs",
     "tasks",
     "oauth",
     "productivity",
@@ -124,6 +126,54 @@
     {
       "name": "drive_share",
       "description": "Share Drive files with permissions"
+    },
+    {
+      "name": "sheets_get_spreadsheet",
+      "description": "Get spreadsheet metadata and sheet list"
+    },
+    {
+      "name": "sheets_get_values",
+      "description": "Read cell values from a spreadsheet range"
+    },
+    {
+      "name": "sheets_update_values",
+      "description": "Write values to a spreadsheet range"
+    },
+    {
+      "name": "sheets_append_values",
+      "description": "Append rows to a spreadsheet"
+    },
+    {
+      "name": "sheets_clear_values",
+      "description": "Clear cell values in a range"
+    },
+    {
+      "name": "sheets_batch_get_values",
+      "description": "Read multiple ranges in one request"
+    },
+    {
+      "name": "sheets_add_sheet",
+      "description": "Add a new sheet tab to a spreadsheet"
+    },
+    {
+      "name": "docs_get_document",
+      "description": "Get a Google Doc's content as plain text"
+    },
+    {
+      "name": "docs_create_document",
+      "description": "Create a new Google Doc with optional content"
+    },
+    {
+      "name": "docs_append_text",
+      "description": "Append text to the end of a Google Doc"
+    },
+    {
+      "name": "docs_replace_text",
+      "description": "Find and replace text in a Google Doc"
+    },
+    {
+      "name": "docs_insert_text",
+      "description": "Insert text at a specific index in a Google Doc"
     },
     {
       "name": "tasks_lists_list",

@@ -72,12 +72,26 @@ export function createGoogleMcpServer() {
         return await accountHandlers.handleAccountRemove(args, registry);
       }
 
-      // OAuth tools (don't require initialization)
+      // OAuth tools (don't require initialization, but get account wrapping)
       if (name === "google_oauth_refresh_tokens") {
-        return await oauthHandlers.handleOauthRefreshTokens(args, registry);
+        const oauthResult = await oauthHandlers.handleOauthRefreshTokens(args, registry);
+        if (!oauthResult.isError && (args as any)?.accountId) {
+          oauthResult.content = [
+            { type: "text", text: `[Account: ${(args as any).accountId}]` },
+            ...oauthResult.content,
+          ];
+        }
+        return oauthResult;
       }
       if (name === "google_oauth_reauthenticate") {
-        return await oauthHandlers.handleOauthReauthenticate(args, registry);
+        const oauthResult = await oauthHandlers.handleOauthReauthenticate(args, registry);
+        if (!oauthResult.isError && (args as any)?.accountId) {
+          oauthResult.content = [
+            { type: "text", text: `[Account: ${(args as any).accountId}]` },
+            ...oauthResult.content,
+          ];
+        }
+        return oauthResult;
       }
 
       // For all other tools, ensure initialization is complete
@@ -327,6 +341,16 @@ export function createGoogleMcpServer() {
             isError: true,
           };
       }
+
+      // Prepend account info to successful responses
+      if (!handlerResult.isError && accountId) {
+        handlerResult.content = [
+          { type: "text", text: `[Account: ${accountId}]` },
+          ...handlerResult.content,
+        ];
+      }
+
+      return handlerResult;
     } catch (error) {
       return {
         content: [

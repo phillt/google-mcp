@@ -28,25 +28,18 @@ export class AccountRegistry {
     return this.tokensDir;
   }
 
-  getServiceBundle(accountId?: string): ServiceBundle {
+  getServiceBundle(accountId: string): ServiceBundle {
     if (!this.hasAccounts()) {
       throw new Error(
         "No Google accounts are authenticated. Use google_account_authenticate to add an account."
       );
     }
 
-    const id = accountId || this.defaultAccountId;
-    if (!id) {
-      throw new Error(
-        "No default account set. Specify an accountId or use google_account_set_default."
-      );
-    }
-
-    const bundle = this.accounts.get(id);
+    const bundle = this.accounts.get(accountId);
     if (!bundle) {
       const available = Array.from(this.accounts.keys()).join(", ");
       throw new Error(
-        `Account "${id}" not found. Available accounts: ${available}`
+        `Account "${accountId}" not found. Available accounts: ${available}`
       );
     }
 

@@ -16,10 +16,7 @@ export async function handleOauthRefreshTokens(
   }
 
   try {
-    const accountId = args.accountId || registry.getDefaultAccountId();
-    if (!accountId) {
-      throw new Error("No account specified and no default account set.");
-    }
+    const accountId = args.accountId;
 
     const tokensDir = registry.getTokensDir();
     const { message } = await refreshAccountTokens(accountId, tokensDir);
@@ -61,14 +58,12 @@ export async function handleOauthReauthenticate(
   }
 
   try {
-    const accountId = args.accountId || registry.getDefaultAccountId();
+    const accountId = args.accountId;
     const tokensDir = registry.getTokensDir();
 
-    // Remove existing tokens if we know the account
-    if (accountId) {
-      removeAccountTokens(accountId, tokensDir);
-      registry.removeAccount(accountId);
-    }
+    // Remove existing tokens
+    removeAccountTokens(accountId, tokensDir);
+    registry.removeAccount(accountId);
 
     // Initiate fresh OAuth flow
     const email = await initiateOAuthFlowForAccount(tokensDir);

@@ -251,34 +251,63 @@ export default class GoogleCalendar {
     startDate: string,
     endDate: string,
     durationMinutes: number,
-    calendarIds?: string[]
+    calendarIds?: string[],
+    attendeeEmails?: string[]
   ) {
     try {
-      // If no calendar IDs specified, use the default one
-      const targetCalendarIds = calendarIds || [this.defaultCalendarId];
+      // Build items array for FreeBusy query
+      const items: Array<{ id: string }> = [];
 
-      // Get all events in the date range for each calendar
-      const allEvents: any[] = [];
-
-      for (const calId of targetCalendarIds) {
-        const params: any = {
-          calendarId: calId,
-          timeMin: startDate,
-          timeMax: endDate,
-          singleEvents: true,
-          orderBy: "startTime",
-        };
-
-        const res = await this.calendar.events.list(params);
-        allEvents.push(...(res.data.items || []));
+      if (calendarIds && calendarIds.length > 0) {
+        for (const id of calendarIds) {
+          items.push({ id });
+        }
       }
 
-      // Sort events by start time
-      allEvents.sort((a, b) => {
-        const aStart = new Date(a.start.dateTime || a.start.date).getTime();
-        const bStart = new Date(b.start.dateTime || b.start.date).getTime();
-        return aStart - bStart;
+      if (attendeeEmails && attendeeEmails.length > 0) {
+        for (const email of attendeeEmails) {
+          items.push({ id: email });
+        }
+      }
+
+      // Default to primary calendar if nothing specified
+      if (items.length === 0) {
+        items.push({ id: this.defaultCalendarId });
+      }
+
+      // Query FreeBusy API
+      const response = await this.calendar.freebusy.query({
+        requestBody: {
+          timeMin: startDate,
+          timeMax: endDate,
+          items,
+        },
       });
+
+      const calendars = response.data.calendars || {};
+      const warnings: string[] = [];
+      const allBusyPeriods: Array<{ start: number; end: number }> = [];
+
+      // Collect busy periods and warnings from each calendar
+      for (const [calId, calData] of Object.entries<any>(calendars)) {
+        if (calData.errors && calData.errors.length > 0) {
+          const reason = calData.errors.map((e: any) => e.reason || e.domain).join(", ");
+          warnings.push(`Could not check availability for ${calId} (${reason})`);
+          continue;
+        }
+
+        if (calData.busy) {
+          for (const period of calData.busy) {
+            allBusyPeriods.push({
+              start: new Date(period.start).getTime(),
+              end: new Date(period.end).getTime(),
+            });
+          }
+        }
+      }
+
+      // Sort busy periods by start time
+      allBusyPeriods.sort((a, b) => a.start - b.start);
 
       // Convert duration from minutes to milliseconds
       const durationMs = durationMinutes * 60 * 1000;
@@ -290,55 +319,53 @@ export default class GoogleCalendar {
       // Store free time slots
       const freeSlots = [];
 
-      // Process all events to find gaps between them
-      for (const event of allEvents) {
-        const eventStart = new Date(
-          event.start.dateTime || event.start.date
-        ).getTime();
-
-        // Check if there's enough free time before this event starts
-        if (eventStart - currentTime >= durationMs) {
-          // We found a free slot
-          const slotStart = new Date(currentTime).toISOString();
-          const slotEnd = new Date(eventStart).toISOString();
-          freeSlots.push({ start: slotStart, end: slotEnd });
+      // Find gaps between busy periods
+      for (const period of allBusyPeriods) {
+        if (period.start - currentTime >= durationMs) {
+          freeSlots.push({
+            start: new Date(currentTime).toISOString(),
+            end: new Date(period.start).toISOString(),
+          });
         }
-
-        // Move current time to the end of this event
-        const eventEnd = new Date(
-          event.end.dateTime || event.end.date
-        ).getTime();
-        currentTime = Math.max(currentTime, eventEnd);
+        currentTime = Math.max(currentTime, period.end);
       }
 
-      // Check if there's free time after the last event
+      // Check if there's free time after the last busy period
       if (endTime - currentTime >= durationMs) {
-        const slotStart = new Date(currentTime).toISOString();
-        const slotEnd = new Date(endTime).toISOString();
-        freeSlots.push({ start: slotStart, end: slotEnd });
+        freeSlots.push({
+          start: new Date(currentTime).toISOString(),
+          end: new Date(endTime).toISOString(),
+        });
       }
 
       // Format results
+      let result = "";
+
       if (freeSlots.length === 0) {
-        return "No free time slots found that meet the criteria.";
+        result = "No free time slots found that meet the criteria.";
+      } else {
+        result =
+          "Available time slots:\n" +
+          freeSlots
+            .map(
+              (slot) =>
+                `${new Date(slot.start).toLocaleString()} - ${new Date(
+                  slot.end
+                ).toLocaleString()} ` +
+                `(${Math.round(
+                  (new Date(slot.end).getTime() -
+                    new Date(slot.start).getTime()) /
+                    (60 * 1000)
+                )} minutes)`
+            )
+            .join("\n");
       }
 
-      return (
-        "Available time slots:\n" +
-        freeSlots
-          .map(
-            (slot) =>
-              `${new Date(slot.start).toLocaleString()} - ${new Date(
-                slot.end
-              ).toLocaleString()} ` +
-              `(${Math.round(
-                (new Date(slot.end).getTime() -
-                  new Date(slot.start).getTime()) /
-                  (60 * 1000)
-              )} minutes)`
-          )
-          .join("\n")
-      );
+      if (warnings.length > 0) {
+        result += "\n\nWarnings:\n" + warnings.map((w) => `- ${w}`).join("\n");
+      }
+
+      return result;
     } catch (error) {
       throw new Error(
         `Failed to find free time: ${

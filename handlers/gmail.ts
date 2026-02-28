@@ -10,6 +10,8 @@ import {
   isDeleteEmailArgs,
   isModifyLabelsArgs,
   isDownloadAttachmentsArgs,
+  isBatchModifyLabelsArgs,
+  isBatchDeleteEmailsArgs,
 } from "../utils/helper";
 
 export async function handleGmailListLabels(
@@ -213,6 +215,44 @@ export async function handleGmailModifyLabels(
     addLabelIds,
     removeLabelIds
   );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailBatchModifyLabels(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isBatchModifyLabelsArgs(args)) {
+    throw new Error(
+      "Invalid arguments for google_gmail_batch_modify_labels"
+    );
+  }
+  const { messageIds, addLabelIds, removeLabelIds } = args;
+  const result = await googleGmailInstance.batchModifyLabels(
+    messageIds,
+    addLabelIds,
+    removeLabelIds
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailBatchDeleteEmails(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isBatchDeleteEmailsArgs(args)) {
+    throw new Error(
+      "Invalid arguments for google_gmail_batch_delete_emails"
+    );
+  }
+  const { messageIds } = args;
+  const result = await googleGmailInstance.batchDeleteEmails(messageIds);
   return {
     content: [{ type: "text", text: result }],
     isError: false,

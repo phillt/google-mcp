@@ -2,6 +2,8 @@ import GoogleCalendar from "./calendar";
 import GoogleGmail from "./gmail";
 import GoogleDrive from "./drive";
 import GoogleTasks from "./tasks";
+import GoogleSheets from "./sheets";
+import GoogleDocs from "./docs";
 import {
   createAuthClientForAccount,
   listStoredAccounts,
@@ -13,6 +15,8 @@ export interface ServiceBundle {
   gmail: GoogleGmail;
   drive: GoogleDrive;
   tasks: GoogleTasks;
+  sheets: GoogleSheets;
+  docs: GoogleDocs;
 }
 
 export class AccountRegistry {
@@ -53,6 +57,8 @@ export class AccountRegistry {
       gmail: new GoogleGmail(authClient),
       drive: new GoogleDrive(authClient),
       tasks: new GoogleTasks(authClient),
+      sheets: new GoogleSheets(authClient),
+      docs: new GoogleDocs(authClient),
     };
 
     this.accounts.set(email, bundle);

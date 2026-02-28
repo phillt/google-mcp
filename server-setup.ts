@@ -13,6 +13,8 @@ import * as calendarHandlers from "./handlers/calendar";
 import * as gmailHandlers from "./handlers/gmail";
 import * as driveHandlers from "./handlers/drive";
 import * as tasksHandlers from "./handlers/tasks";
+import * as sheetsHandlers from "./handlers/sheets";
+import * as docsHandlers from "./handlers/docs";
 import * as oauthHandlers from "./handlers/oauth";
 import * as accountHandlers from "./handlers/account";
 
@@ -332,6 +334,82 @@ export function createGoogleMcpServer() {
           handlerResult = await tasksHandlers.handleTasksDeleteTasklist(
             args,
             bundle.tasks
+          );
+          break;
+
+        // Sheets tools
+        case "google_sheets_get_spreadsheet":
+          handlerResult = await sheetsHandlers.handleSheetsGetSpreadsheet(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_get_values":
+          handlerResult = await sheetsHandlers.handleSheetsGetValues(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_update_values":
+          handlerResult = await sheetsHandlers.handleSheetsUpdateValues(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_append_values":
+          handlerResult = await sheetsHandlers.handleSheetsAppendValues(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_clear_values":
+          handlerResult = await sheetsHandlers.handleSheetsClearValues(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_batch_get_values":
+          handlerResult = await sheetsHandlers.handleSheetsBatchGetValues(
+            args,
+            bundle.sheets
+          );
+          break;
+        case "google_sheets_add_sheet":
+          handlerResult = await sheetsHandlers.handleSheetsAddSheet(
+            args,
+            bundle.sheets
+          );
+          break;
+
+        // Docs tools
+        case "google_docs_get_document":
+          handlerResult = await docsHandlers.handleDocsGetDocument(
+            args,
+            bundle.docs
+          );
+          break;
+        case "google_docs_create_document":
+          handlerResult = await docsHandlers.handleDocsCreateDocument(
+            args,
+            bundle.docs
+          );
+          break;
+        case "google_docs_append_text":
+          handlerResult = await docsHandlers.handleDocsAppendText(
+            args,
+            bundle.docs
+          );
+          break;
+        case "google_docs_replace_text":
+          handlerResult = await docsHandlers.handleDocsReplaceText(
+            args,
+            bundle.docs
+          );
+          break;
+        case "google_docs_insert_text":
+          handlerResult = await docsHandlers.handleDocsInsertText(
+            args,
+            bundle.docs
           );
           break;
 

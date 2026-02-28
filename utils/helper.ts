@@ -542,6 +542,176 @@ export function isDownloadAttachmentsArgs(args: any): args is {
   );
 }
 
+// Google Sheets validation functions
+export function isGetSpreadsheetArgs(args: any): args is {
+  spreadsheetId: string;
+  includeGridData?: boolean;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    (args.includeGridData === undefined || typeof args.includeGridData === "boolean") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isGetValuesArgs(args: any): args is {
+  spreadsheetId: string;
+  range: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    typeof args.range === "string" &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isUpdateValuesArgs(args: any): args is {
+  spreadsheetId: string;
+  range: string;
+  values: any[][];
+  valueInputOption?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    typeof args.range === "string" &&
+    Array.isArray(args.values) &&
+    (args.valueInputOption === undefined || typeof args.valueInputOption === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isAppendValuesArgs(args: any): args is {
+  spreadsheetId: string;
+  range: string;
+  values: any[][];
+  valueInputOption?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    typeof args.range === "string" &&
+    Array.isArray(args.values) &&
+    (args.valueInputOption === undefined || typeof args.valueInputOption === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isClearValuesArgs(args: any): args is {
+  spreadsheetId: string;
+  range: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    typeof args.range === "string" &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isBatchGetValuesArgs(args: any): args is {
+  spreadsheetId: string;
+  ranges: string[];
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    Array.isArray(args.ranges) &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isAddSheetArgs(args: any): args is {
+  spreadsheetId: string;
+  title: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.spreadsheetId === "string" &&
+    typeof args.title === "string" &&
+    hasRequiredAccountId(args)
+  );
+}
+
+// Google Docs validation functions
+export function isGetDocumentArgs(args: any): args is {
+  documentId: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.documentId === "string" &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isCreateDocumentArgs(args: any): args is {
+  title: string;
+  content?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.title === "string" &&
+    (args.content === undefined || typeof args.content === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isAppendTextArgs(args: any): args is {
+  documentId: string;
+  text: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.documentId === "string" &&
+    typeof args.text === "string" &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isReplaceTextArgs(args: any): args is {
+  documentId: string;
+  findText: string;
+  replaceText: string;
+  matchCase?: boolean;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.documentId === "string" &&
+    typeof args.findText === "string" &&
+    typeof args.replaceText === "string" &&
+    (args.matchCase === undefined || typeof args.matchCase === "boolean") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isInsertTextArgs(args: any): args is {
+  documentId: string;
+  text: string;
+  index: number;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.documentId === "string" &&
+    typeof args.text === "string" &&
+    typeof args.index === "number" &&
+    hasRequiredAccountId(args)
+  );
+}
+
 // Account management validation functions
 export function isAccountAuthenticateArgs(args: any): args is Record<string, never> {
   return args && Object.keys(args).length === 0;

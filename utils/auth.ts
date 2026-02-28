@@ -128,6 +128,8 @@ const DEFAULT_SCOPES = [
   "https://www.googleapis.com/auth/calendar",
   "https://www.googleapis.com/auth/tasks",
   "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/spreadsheets",
+  "https://www.googleapis.com/auth/documents",
 ];
 
 export async function initiateOAuthFlowForAccount(tokensDir: string): Promise<string> {
@@ -300,6 +302,8 @@ export async function createAuthClient(): Promise<any> {
         "https://www.googleapis.com/auth/gmail.readonly",
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/tasks",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/documents",
       ],
       subject: process.env.GMAIL_USER_TO_IMPERSONATE,
     });

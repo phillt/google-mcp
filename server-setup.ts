@@ -236,6 +236,18 @@ export function createGoogleMcpServer() {
             bundle.gmail
           );
           break;
+        case "google_gmail_batch_modify_labels":
+          handlerResult = await gmailHandlers.handleGmailBatchModifyLabels(
+            args,
+            bundle.gmail
+          );
+          break;
+        case "google_gmail_batch_delete_emails":
+          handlerResult = await gmailHandlers.handleGmailBatchDeleteEmails(
+            args,
+            bundle.gmail
+          );
+          break;
 
         // Drive tools
         case "google_drive_list_files":

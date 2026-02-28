@@ -80,6 +80,14 @@
       "description": "Remove labels from emails"
     },
     {
+      "name": "gmail_batch_modify_labels",
+      "description": "Add or remove labels from multiple emails in one batch request (up to 1000)"
+    },
+    {
+      "name": "gmail_batch_delete",
+      "description": "Permanently delete multiple emails in one batch request (up to 1000)"
+    },
+    {
       "name": "calendar_list",
       "description": "List available calendars"
     },

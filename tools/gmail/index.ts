@@ -410,6 +410,52 @@ export const DRAFT_REPLY_TOOL: Tool = {
   },
 };
 
+export const BATCH_MODIFY_LABELS_TOOL: Tool = {
+  name: "google_gmail_batch_modify_labels",
+  description:
+    "Add or remove labels from multiple emails in a single batch operation (up to 1000). Common patterns: mark as read (removeLabelIds: ['UNREAD']), mark as unread (addLabelIds: ['UNREAD']), star (addLabelIds: ['STARRED']), trash (addLabelIds: ['TRASH']), archive (removeLabelIds: ['INBOX']).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageIds: {
+        type: "array",
+        items: { type: "string" },
+        description: "Array of message IDs to modify (max 1000)",
+      },
+      addLabelIds: {
+        type: "array",
+        items: { type: "string" },
+        description: "Labels to add to all specified messages",
+      },
+      removeLabelIds: {
+        type: "array",
+        items: { type: "string" },
+        description: "Labels to remove from all specified messages",
+      },
+      ...accountIdProperty,
+    },
+    required: ["messageIds", "accountId"],
+  },
+};
+
+export const BATCH_DELETE_EMAILS_TOOL: Tool = {
+  name: "google_gmail_batch_delete_emails",
+  description:
+    "PERMANENTLY delete multiple emails in a single batch operation (up to 1000). WARNING: This action is irreversible — deleted messages cannot be recovered. For safe removal, use google_gmail_batch_modify_labels with addLabelIds: ['TRASH'] instead.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageIds: {
+        type: "array",
+        items: { type: "string" },
+        description: "Array of message IDs to permanently delete (max 1000)",
+      },
+      ...accountIdProperty,
+    },
+    required: ["messageIds", "accountId"],
+  },
+};
+
 export const gmailTools = [
   LIST_LABELS_TOOL,
   LIST_EMAILS_TOOL,
@@ -422,4 +468,6 @@ export const gmailTools = [
   DELETE_EMAIL_TOOL,
   MODIFY_LABELS_TOOL,
   DOWNLOAD_ATTACHMENTS_TOOL,
+  BATCH_MODIFY_LABELS_TOOL,
+  BATCH_DELETE_EMAILS_TOOL,
 ];

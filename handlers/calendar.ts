@@ -190,12 +190,13 @@ export async function handleCalendarFindFreeTime(
     throw new Error("Invalid arguments for google_calendar_find_free_time");
   }
 
-  const { startDate, endDate, duration, calendarIds } = args;
+  const { startDate, endDate, duration, calendarIds, attendeeEmails } = args;
   const result = await googleCalendarInstance.findFreeTime(
     startDate,
     endDate,
     duration,
-    calendarIds
+    calendarIds,
+    attendeeEmails
   );
   return {
     content: [{ type: "text", text: result }],

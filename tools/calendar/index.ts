@@ -247,6 +247,12 @@ export const FIND_FREE_TIME_TOOL: Tool = {
         description:
           "Optional: Calendar IDs to check (defaults to primary if not specified)",
       },
+      attendeeEmails: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Email addresses of attendees to check availability for. Their calendars must be shared (at least free/busy) with your account.",
+      },
       ...accountIdProperty,
     },
     required: ["startDate", "endDate", "duration", "accountId"],

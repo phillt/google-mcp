@@ -127,6 +127,7 @@ export function isFindFreeTimeArgs(args: any): args is {
   endDate: string;
   duration: number;
   calendarIds?: string[];
+  attendeeEmails?: string[];
   accountId: string;
 } {
   return (
@@ -135,6 +136,7 @@ export function isFindFreeTimeArgs(args: any): args is {
     typeof args.endDate === "string" &&
     typeof args.duration === "number" &&
     (args.calendarIds === undefined || Array.isArray(args.calendarIds)) &&
+    (args.attendeeEmails === undefined || Array.isArray(args.attendeeEmails)) &&
     hasRequiredAccountId(args)
   );
 }

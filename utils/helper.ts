@@ -303,6 +303,7 @@ export function isCreateFileArgs(args: any): args is {
   content: string;
   mimeType?: string;
   folderId?: string;
+  sourceMimeType?: string;
   accountId: string;
 } {
   return (
@@ -311,6 +312,7 @@ export function isCreateFileArgs(args: any): args is {
     typeof args.content === "string" &&
     (args.mimeType === undefined || typeof args.mimeType === "string") &&
     (args.folderId === undefined || typeof args.folderId === "string") &&
+    (args.sourceMimeType === undefined || typeof args.sourceMimeType === "string") &&
     hasRequiredAccountId(args)
   );
 }
@@ -319,6 +321,7 @@ export function isUpdateFileArgs(args: any): args is {
   fileId: string;
   content: string;
   mimeType?: string;
+  sourceMimeType?: string;
   accountId: string;
 } {
   return (
@@ -326,6 +329,7 @@ export function isUpdateFileArgs(args: any): args is {
     typeof args.fileId === "string" &&
     typeof args.content === "string" &&
     (args.mimeType === undefined || typeof args.mimeType === "string") &&
+    (args.sourceMimeType === undefined || typeof args.sourceMimeType === "string") &&
     hasRequiredAccountId(args)
   );
 }

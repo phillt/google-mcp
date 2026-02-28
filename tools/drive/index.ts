@@ -57,7 +57,8 @@ export const GET_FILE_CONTENT_TOOL: Tool = {
 
 export const CREATE_FILE_TOOL: Tool = {
   name: "google_drive_create_file",
-  description: "Create a new file in Google Drive",
+  description:
+    "Create a new file in Google Drive. Supports conversion to Google Workspace formats (e.g., CSV content → Google Sheet, HTML/text → Google Doc) by setting the target mimeType and optionally sourceMimeType.",
   inputSchema: {
     type: "object",
     properties: {
@@ -72,11 +73,16 @@ export const CREATE_FILE_TOOL: Tool = {
       mimeType: {
         type: "string",
         description:
-          "MIME type of the file (e.g., 'text/plain', 'application/vnd.google-apps.document')",
+          "MIME type of the file (e.g., 'text/plain', 'application/vnd.google-apps.document', 'application/vnd.google-apps.spreadsheet')",
       },
       folderId: {
         type: "string",
         description: "ID of the folder to create the file in",
+      },
+      sourceMimeType: {
+        type: "string",
+        description:
+          "MIME type of the input content for Workspace conversion (e.g., 'text/csv' for sheets, 'text/html' for docs). Auto-detected if omitted.",
       },
       ...accountIdProperty,
     },
@@ -86,7 +92,8 @@ export const CREATE_FILE_TOOL: Tool = {
 
 export const UPDATE_FILE_TOOL: Tool = {
   name: "google_drive_update_file",
-  description: "Update the content of an existing file in Google Drive",
+  description:
+    "Update the content of an existing file in Google Drive. Supports updating Google Workspace files (Docs, Sheets) by converting content (e.g., CSV → Sheet, text/HTML → Doc).",
   inputSchema: {
     type: "object",
     properties: {
@@ -101,6 +108,11 @@ export const UPDATE_FILE_TOOL: Tool = {
       mimeType: {
         type: "string",
         description: "MIME type of the file (if different from original)",
+      },
+      sourceMimeType: {
+        type: "string",
+        description:
+          "MIME type of the input content for Workspace file conversion (e.g., 'text/csv' for sheets, 'text/html' for docs). Auto-detected if omitted.",
       },
       ...accountIdProperty,
     },

@@ -50,12 +50,13 @@ export async function handleDriveCreateFile(
   if (!isCreateFileArgs(args)) {
     throw new Error("Invalid arguments for google_drive_create_file");
   }
-  const { name, content, mimeType, folderId } = args;
+  const { name, content, mimeType, folderId, sourceMimeType } = args;
   const result = await googleDriveInstance.createFile(
     name,
     content,
     mimeType,
-    folderId
+    folderId,
+    sourceMimeType
   );
   return {
     content: [{ type: "text", text: result }],
@@ -70,11 +71,12 @@ export async function handleDriveUpdateFile(
   if (!isUpdateFileArgs(args)) {
     throw new Error("Invalid arguments for google_drive_update_file");
   }
-  const { fileId, content, mimeType } = args;
+  const { fileId, content, mimeType, sourceMimeType } = args;
   const result = await googleDriveInstance.updateFile(
     fileId,
     content,
-    mimeType
+    mimeType,
+    sourceMimeType
   );
   return {
     content: [{ type: "text", text: result }],

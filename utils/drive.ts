@@ -106,7 +106,8 @@ export default class GoogleDrive {
     name: string,
     content: string,
     mimeType: string = "text/plain",
-    folderId?: string
+    folderId?: string,
+    sourceMimeType?: string
   ) {
     try {
       const fileMetadata: any = {
@@ -117,8 +118,31 @@ export default class GoogleDrive {
         fileMetadata.parents = [folderId];
       }
 
-      // If creating a Google Doc, Spreadsheet, etc.
+      // If creating a Google Workspace file (Doc, Spreadsheet, etc.)
       if (mimeType.includes("application/vnd.google-apps")) {
+        if (content) {
+          // Convert content into the Workspace format
+          const resolvedSourceMimeType =
+            sourceMimeType ||
+            (mimeType === "application/vnd.google-apps.spreadsheet"
+              ? "text/csv"
+              : "text/plain");
+
+          fileMetadata.mimeType = mimeType;
+          const response = await this.drive.files.create({
+            requestBody: fileMetadata,
+            media: {
+              mimeType: resolvedSourceMimeType,
+              body: content,
+            },
+            fields: "id,name,webViewLink",
+          });
+
+          const { id, webViewLink } = response.data;
+          return `Created ${mimeType} with name: ${name} (converted from ${resolvedSourceMimeType})\nID: ${id}\nLink: ${webViewLink}`;
+        }
+
+        // No content — create empty Workspace file
         const response = await this.drive.files.create({
           requestBody: fileMetadata,
           fields: "id,name,webViewLink",
@@ -152,7 +176,12 @@ export default class GoogleDrive {
     }
   }
 
-  async updateFile(fileId: string, content: string, mimeType?: string) {
+  async updateFile(
+    fileId: string,
+    content: string,
+    mimeType?: string,
+    sourceMimeType?: string
+  ) {
     try {
       // First get the file metadata to verify its type
       const fileMetadata = await this.drive.files.get({
@@ -160,15 +189,26 @@ export default class GoogleDrive {
         fields: "name,mimeType",
       });
 
-      const { mimeType: fileMimeType } = fileMetadata.data;
+      const { name: fileName, mimeType: fileMimeType } = fileMetadata.data;
 
-      // Check if this is a Google Doc/Sheet - these require different update approach
+      // For Google Workspace files, use import/conversion
       if (fileMimeType.includes("application/vnd.google-apps")) {
-        throw new Error(
-          `Updating Google ${fileMimeType
-            .split(".")
-            .pop()} content is not supported via this tool. Please use the Google Drive web interface.`
-        );
+        const resolvedSourceMimeType =
+          sourceMimeType ||
+          (fileMimeType === "application/vnd.google-apps.spreadsheet"
+            ? "text/csv"
+            : "text/plain");
+
+        const response = await this.drive.files.update({
+          fileId: fileId,
+          media: {
+            mimeType: resolvedSourceMimeType,
+            body: content,
+          },
+          fields: "id,name",
+        });
+
+        return `File '${response.data.name}' updated successfully (converted from ${resolvedSourceMimeType}).`;
       }
 
       // Update regular file content

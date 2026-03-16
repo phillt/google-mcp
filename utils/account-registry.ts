@@ -109,14 +109,22 @@ export class AccountRegistry {
 
   async loadAllAccounts(): Promise<void> {
     const emails = listStoredAccounts(this.tokensDir);
+    let failedCount = 0;
     for (const email of emails) {
       try {
         const authClient = await createAuthClientForAccount(email, this.tokensDir);
         this.addAccount(email, authClient);
       } catch (err) {
+        failedCount++;
         // Skip accounts that fail to load (e.g., expired tokens with no refresh token)
         console.error(`Failed to load account ${email}: ${err instanceof Error ? err.message : String(err)}`);
       }
+    }
+
+    if (emails.length > 0 && !this.hasAccounts()) {
+      console.warn(
+        `All ${failedCount} stored account(s) failed to load. Use google_account_authenticate to re-authenticate.`
+      );
     }
   }
 }

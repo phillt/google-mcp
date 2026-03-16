@@ -438,6 +438,52 @@ export const BATCH_MODIFY_LABELS_TOOL: Tool = {
   },
 };
 
+export const MARK_AS_UNREAD_TOOL: Tool = {
+  name: "google_gmail_mark_as_unread",
+  description:
+    "Mark one or more emails as unread. Accepts a single messageId or a batch of messageIds (up to 1000).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "string",
+        description: "ID of a single email to mark as unread",
+      },
+      messageIds: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Array of message IDs to mark as unread (max 1000). Use this for batch operations.",
+      },
+      ...accountIdProperty,
+    },
+    required: ["accountId"],
+  },
+};
+
+export const LIST_UNREAD_EMAILS_TOOL: Tool = {
+  name: "google_gmail_list_unread_emails",
+  description:
+    "List unread emails. Always filters by the UNREAD label. Returns pagination metadata (estimated total unread, whether more exist).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      maxResults: {
+        type: "number",
+        description: "Maximum number of unread emails to return (default 10)",
+      },
+      labelIds: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Additional label IDs to filter by (e.g., 'INBOX'). UNREAD is always included automatically.",
+      },
+      ...accountIdProperty,
+    },
+    required: ["accountId"],
+  },
+};
+
 export const BATCH_DELETE_EMAILS_TOOL: Tool = {
   name: "google_gmail_batch_delete_emails",
   description:
@@ -459,6 +505,7 @@ export const BATCH_DELETE_EMAILS_TOOL: Tool = {
 export const gmailTools = [
   LIST_LABELS_TOOL,
   LIST_EMAILS_TOOL,
+  LIST_UNREAD_EMAILS_TOOL,
   GET_EMAIL_TOOL,
   GET_EMAIL_BY_INDEX_TOOL,
   SEND_EMAIL_TOOL,
@@ -467,6 +514,7 @@ export const gmailTools = [
   DRAFT_REPLY_TOOL,
   DELETE_EMAIL_TOOL,
   MODIFY_LABELS_TOOL,
+  MARK_AS_UNREAD_TOOL,
   DOWNLOAD_ATTACHMENTS_TOOL,
   BATCH_MODIFY_LABELS_TOOL,
   BATCH_DELETE_EMAILS_TOOL,

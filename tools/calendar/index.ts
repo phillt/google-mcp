@@ -260,6 +260,116 @@ export const FIND_FREE_TIME_TOOL: Tool = {
   },
 };
 
+export const RESPOND_TO_EVENT_TOOL: Tool = {
+  name: "google_calendar_respond_to_event",
+  description:
+    "Respond to a calendar event invitation (accept, decline, or tentatively accept)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      eventId: {
+        type: "string",
+        description: "ID of the event to respond to",
+      },
+      response: {
+        type: "string",
+        enum: ["accepted", "declined", "tentative"],
+        description:
+          'Your RSVP response: "accepted", "declined", or "tentative"',
+      },
+      calendarId: {
+        type: "string",
+        description:
+          "Optional: ID of calendar to use (defaults to primary if not specified)",
+      },
+      ...accountIdProperty,
+    },
+    required: ["eventId", "response", "accountId"],
+  },
+};
+
+export const QUICK_ADD_EVENT_TOOL: Tool = {
+  name: "google_calendar_quick_add_event",
+  description:
+    "Create an event using natural language (e.g., 'Meeting with Bob tomorrow at 3pm for 1 hour')",
+  inputSchema: {
+    type: "object",
+    properties: {
+      text: {
+        type: "string",
+        description:
+          "Natural language description of the event to create",
+      },
+      calendarId: {
+        type: "string",
+        description:
+          "Optional: ID of calendar to use (defaults to primary if not specified)",
+      },
+      ...accountIdProperty,
+    },
+    required: ["text", "accountId"],
+  },
+};
+
+export const GET_EVENT_INSTANCES_TOOL: Tool = {
+  name: "google_calendar_get_event_instances",
+  description:
+    "List individual occurrences of a recurring event",
+  inputSchema: {
+    type: "object",
+    properties: {
+      eventId: {
+        type: "string",
+        description: "ID of the recurring event",
+      },
+      timeMin: {
+        type: "string",
+        description: "Start of time range in ISO format",
+      },
+      timeMax: {
+        type: "string",
+        description: "End of time range in ISO format",
+      },
+      maxResults: {
+        type: "number",
+        description: "Maximum number of instances to return",
+      },
+      calendarId: {
+        type: "string",
+        description:
+          "Optional: ID of calendar to use (defaults to primary if not specified)",
+      },
+      ...accountIdProperty,
+    },
+    required: ["eventId", "accountId"],
+  },
+};
+
+export const MOVE_EVENT_TOOL: Tool = {
+  name: "google_calendar_move_event",
+  description: "Move an event from one calendar to another",
+  inputSchema: {
+    type: "object",
+    properties: {
+      eventId: {
+        type: "string",
+        description: "ID of the event to move",
+      },
+      destinationCalendarId: {
+        type: "string",
+        description: "ID of the destination calendar",
+      },
+      sourceCalendarId: {
+        type: "string",
+        description:
+          "Optional: ID of the source calendar (defaults to primary if not specified)",
+      },
+      ...accountIdProperty,
+    },
+    required: ["eventId", "destinationCalendarId", "accountId"],
+  },
+};
+
 export const calendarTools = [
   SET_DEFAULT_CALENDAR_TOOL,
   LIST_CALENDARS_TOOL,

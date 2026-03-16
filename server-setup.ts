@@ -168,6 +168,31 @@ export function createGoogleMcpServer() {
             bundle.calendar
           );
           break;
+        case "google_calendar_respond_to_event":
+          handlerResult = await calendarHandlers.handleCalendarRespondToEvent(
+            args,
+            bundle.calendar,
+            accountId
+          );
+          break;
+        case "google_calendar_quick_add_event":
+          handlerResult = await calendarHandlers.handleCalendarQuickAddEvent(
+            args,
+            bundle.calendar
+          );
+          break;
+        case "google_calendar_get_event_instances":
+          handlerResult = await calendarHandlers.handleCalendarGetEventInstances(
+            args,
+            bundle.calendar
+          );
+          break;
+        case "google_calendar_move_event":
+          handlerResult = await calendarHandlers.handleCalendarMoveEvent(
+            args,
+            bundle.calendar
+          );
+          break;
 
         // Gmail tools
         case "google_gmail_list_labels":

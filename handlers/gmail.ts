@@ -12,6 +12,8 @@ import {
   isDownloadAttachmentsArgs,
   isBatchModifyLabelsArgs,
   isBatchDeleteEmailsArgs,
+  isMarkAsUnreadArgs,
+  isListUnreadEmailsArgs,
 } from "../utils/helper";
 
 export async function handleGmailListLabels(
@@ -270,6 +272,53 @@ export async function handleGmailDownloadAttachments(
   const result = await googleGmailInstance.downloadAttachments(
     messageId,
     downloadPath
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailMarkAsUnread(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isMarkAsUnreadArgs(args)) {
+    throw new Error(
+      "Invalid arguments for google_gmail_mark_as_unread: provide exactly one of messageId or messageIds"
+    );
+  }
+  let result: string;
+  if (args.messageIds) {
+    result = await googleGmailInstance.batchModifyLabels(
+      args.messageIds,
+      ["UNREAD"]
+    );
+  } else {
+    result = await googleGmailInstance.modifyLabels(
+      args.messageId!,
+      ["UNREAD"]
+    );
+  }
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleGmailListUnreadEmails(
+  args: any,
+  googleGmailInstance: GoogleGmail
+) {
+  if (!isListUnreadEmailsArgs(args)) {
+    throw new Error(
+      "Invalid arguments for google_gmail_list_unread_emails"
+    );
+  }
+  const { maxResults, labelIds } = args;
+  const result = await googleGmailInstance.listUnreadEmails(
+    maxResults,
+    labelIds
   );
   return {
     content: [{ type: "text", text: result }],

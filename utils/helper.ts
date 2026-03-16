@@ -141,6 +141,69 @@ export function isFindFreeTimeArgs(args: any): args is {
   );
 }
 
+export function isRespondToEventArgs(args: any): args is {
+  eventId: string;
+  response: "accepted" | "declined" | "tentative";
+  calendarId?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.eventId === "string" &&
+    typeof args.response === "string" &&
+    ["accepted", "declined", "tentative"].includes(args.response) &&
+    (args.calendarId === undefined || typeof args.calendarId === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isQuickAddEventArgs(args: any): args is {
+  text: string;
+  calendarId?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.text === "string" &&
+    (args.calendarId === undefined || typeof args.calendarId === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isGetEventInstancesArgs(args: any): args is {
+  eventId: string;
+  timeMin?: string;
+  timeMax?: string;
+  maxResults?: number;
+  calendarId?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.eventId === "string" &&
+    (args.timeMin === undefined || typeof args.timeMin === "string") &&
+    (args.timeMax === undefined || typeof args.timeMax === "string") &&
+    (args.maxResults === undefined || typeof args.maxResults === "number") &&
+    (args.calendarId === undefined || typeof args.calendarId === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isMoveEventArgs(args: any): args is {
+  eventId: string;
+  destinationCalendarId: string;
+  sourceCalendarId?: string;
+  accountId: string;
+} {
+  return (
+    args &&
+    typeof args.eventId === "string" &&
+    typeof args.destinationCalendarId === "string" &&
+    (args.sourceCalendarId === undefined || typeof args.sourceCalendarId === "string") &&
+    hasRequiredAccountId(args)
+  );
+}
+
 // Gmail validation functions
 export function isListLabelsArgs(args: any): args is { accountId: string } {
   return (

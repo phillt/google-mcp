@@ -113,6 +113,77 @@ export default class GoogleGmail {
     }
   }
 
+  async listUnreadEmails(
+    maxResults: number = 10,
+    additionalLabelIds?: string[]
+  ) {
+    try {
+      const labelIds = ["UNREAD", ...(additionalLabelIds || [])];
+
+      const response = await this.gmail.users.messages.list({
+        userId: "me",
+        labelIds: labelIds,
+        maxResults: maxResults,
+      });
+
+      const nextPageToken = response.data.nextPageToken;
+      const resultSizeEstimate = response.data.resultSizeEstimate || 0;
+
+      if (!response.data.messages || response.data.messages.length === 0) {
+        return "No unread messages found.";
+      }
+
+      const results = [];
+
+      for (const message of response.data.messages) {
+        const msgDetails = await this.gmail.users.messages.get({
+          userId: "me",
+          id: message.id,
+          format: "metadata",
+          metadataHeaders: ["Subject", "From", "Date"],
+        });
+
+        const headers = msgDetails.data.payload.headers;
+        const subject =
+          headers.find((h: any) => h.name === "Subject")?.value ||
+          "(No subject)";
+        const from = headers.find((h: any) => h.name === "From")?.value || "";
+        const date = headers.find((h: any) => h.name === "Date")?.value || "";
+
+        results.push({
+          id: message.id,
+          subject,
+          from,
+          date,
+          snippet: msgDetails.data.snippet,
+        });
+      }
+
+      let output = results
+        .map(
+          (msg, index) =>
+            `[${index + 1}] ID: ${msg.id}\nFrom: ${msg.from}\nDate: ${
+              msg.date
+            }\nSubject: ${msg.subject}\nSnippet: ${msg.snippet}`
+        )
+        .join("\n\n---\n\n");
+
+      // Append pagination footer
+      output += `\n\n===\nShowing ${results.length} unread email(s) (estimated ${resultSizeEstimate} total unread)`;
+      if (nextPageToken) {
+        output += `\nMore unread emails exist beyond this set.`;
+      }
+
+      return output;
+    } catch (error) {
+      throw new Error(
+        `Failed to list unread emails: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
   getMessageIdByIndex(index: number): string {
     if (index < 1 || index > this.recentEmails.length) {
       throw new Error(
@@ -143,15 +214,7 @@ export default class GoogleGmail {
       // Extract message body
       let body = "";
       if (payload.parts) {
-        // Multipart message
-        for (const part of payload.parts) {
-          if (part.mimeType === "text/plain" && part.body.data) {
-            body = Buffer.from(part.body.data, "base64").toString();
-            break;
-          } else if (part.mimeType === "text/html" && part.body.data) {
-            body = Buffer.from(part.body.data, "base64").toString();
-          }
-        }
+        body = this.extractBodyFromParts(payload.parts);
       } else if (payload.body && payload.body.data) {
         // Simple message
         body = Buffer.from(payload.body.data, "base64").toString();
@@ -180,9 +243,11 @@ export default class GoogleGmail {
         result += `\nUse google_gmail_download_attachments to download all attachments.\n\n`;
       }
 
-      result += `Body: \n${body.substring(0, 1500)}${
-        body.length > 1500 ? "... (truncated)" : ""
-      }`;
+      const MAX_BODY_LENGTH = 10000;
+      if (body.length > MAX_BODY_LENGTH) {
+        body = body.substring(0, MAX_BODY_LENGTH) + "\n... (truncated)";
+      }
+      result += `Body: \n${body}`;
 
       return result;
     } catch (error) {
@@ -192,6 +257,28 @@ export default class GoogleGmail {
         }`
       );
     }
+  }
+
+  private extractBodyFromParts(parts: any[]): string {
+    let plainText = "";
+    let htmlText = "";
+
+    for (const part of parts) {
+      if (part.parts && Array.isArray(part.parts)) {
+        // Recursively handle nested multipart structures
+        const nested = this.extractBodyFromParts(part.parts);
+        if (nested) {
+          // Use nested result as fallback, preserving any direct-level matches
+          if (!plainText) plainText = nested;
+        }
+      } else if (part.mimeType === "text/plain" && part.body?.data) {
+        plainText = Buffer.from(part.body.data, "base64").toString();
+      } else if (part.mimeType === "text/html" && part.body?.data) {
+        htmlText = Buffer.from(part.body.data, "base64").toString();
+      }
+    }
+
+    return plainText || htmlText;
   }
 
   private async processAttachments(
@@ -235,12 +322,15 @@ export default class GoogleGmail {
           }
 
           // Get file content
-          const fileResponse = await this.drive.files.get({
-            fileId: attachment.driveFileId,
-            alt: "media",
-          });
+          const fileResponse = await this.drive.files.get(
+            {
+              fileId: attachment.driveFileId,
+              alt: "media",
+            },
+            { responseType: "arraybuffer" }
+          );
 
-          const base64Data = Buffer.from(fileResponse.data).toString("base64");
+          const base64Data = Buffer.from(fileResponse.data as ArrayBuffer).toString("base64");
 
           processedAttachments.push({
             filename: attachment.filename || name,
@@ -264,6 +354,16 @@ export default class GoogleGmail {
     }
 
     return processedAttachments;
+  }
+
+  // LLM tool-call bodies may contain literal backslash-escaped sequences
+  // (e.g. "\\n" as two chars) when the model serialises newlines in JSON
+  // string values. This normalises them to real control characters.
+  private normalizeEmailBody(body: string): string {
+    return body
+      .replace(/\\r\\n/g, '\r\n')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t');
   }
 
   private async createMultipartEmail(
@@ -340,6 +440,7 @@ export default class GoogleGmail {
     attachments?: Attachment[]
   ) {
     try {
+      body = this.normalizeEmailBody(body);
       let processedAttachments: FileAttachment[] = [];
 
       // Process attachments if provided
@@ -425,6 +526,7 @@ export default class GoogleGmail {
     attachments?: Attachment[]
   ) {
     try {
+      body = this.normalizeEmailBody(body);
       let processedAttachments: FileAttachment[] = [];
 
       // Process attachments if provided
@@ -848,6 +950,7 @@ export default class GoogleGmail {
     attachments?: Attachment[]
   ) {
     try {
+      body = this.normalizeEmailBody(body);
       const context = await this.getReplyContext(messageId);
 
       // Build threading headers
@@ -952,6 +1055,7 @@ export default class GoogleGmail {
     attachments?: Attachment[]
   ) {
     try {
+      body = this.normalizeEmailBody(body);
       const context = await this.getReplyContext(messageId);
 
       // Build threading headers

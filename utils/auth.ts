@@ -255,6 +255,9 @@ export async function migrateTokenFile(tokensDir: string): Promise<string | null
 
 // --- Legacy functions (kept for backward compatibility) ---
 
+/**
+ * @deprecated Use {@link createAuthClientForAccount} instead. Retained for test compatibility.
+ */
 export async function createAuthClient(): Promise<any> {
   const oauthClientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const oauthClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
@@ -310,6 +313,9 @@ export async function createAuthClient(): Promise<any> {
   }
 }
 
+/**
+ * @deprecated Use {@link initiateOAuthFlowForAccount} instead. Retained for test compatibility.
+ */
 export async function initiateOAuthFlow(scopes?: string[]): Promise<void> {
   try {
     // Start the OAuth server to handle the callback

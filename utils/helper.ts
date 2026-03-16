@@ -1,4 +1,4 @@
-// Validation functions for Google Tools arguments.. Just necessary thing
+// Type guard functions for validating MCP tool arguments
 
 // Helper: check required accountId field
 function hasRequiredAccountId(args: any): boolean {
@@ -334,6 +334,37 @@ export function isModifyLabelsArgs(args: any): args is {
     typeof args.messageId === "string" &&
     (args.addLabelIds === undefined || Array.isArray(args.addLabelIds)) &&
     (args.removeLabelIds === undefined || Array.isArray(args.removeLabelIds)) &&
+    hasRequiredAccountId(args)
+  );
+}
+
+export function isMarkAsUnreadArgs(args: any): args is {
+  messageId?: string;
+  messageIds?: string[];
+  accountId: string;
+} {
+  const hasMessageId = typeof args.messageId === "string";
+  const hasMessageIds =
+    Array.isArray(args.messageIds) &&
+    args.messageIds.length > 0 &&
+    args.messageIds.every((id: any) => typeof id === "string");
+
+  // Exactly one of messageId or messageIds must be provided
+  if (!hasMessageId && !hasMessageIds) return false;
+  if (hasMessageId && hasMessageIds) return false;
+
+  return args && hasRequiredAccountId(args);
+}
+
+export function isListUnreadEmailsArgs(args: any): args is {
+  maxResults?: number;
+  labelIds?: string[];
+  accountId: string;
+} {
+  return (
+    args &&
+    (args.maxResults === undefined || typeof args.maxResults === "number") &&
+    (args.labelIds === undefined || Array.isArray(args.labelIds)) &&
     hasRequiredAccountId(args)
   );
 }

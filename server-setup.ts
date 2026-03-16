@@ -273,6 +273,18 @@ export function createGoogleMcpServer() {
             bundle.gmail
           );
           break;
+        case "google_gmail_mark_as_unread":
+          handlerResult = await gmailHandlers.handleGmailMarkAsUnread(
+            args,
+            bundle.gmail
+          );
+          break;
+        case "google_gmail_list_unread_emails":
+          handlerResult = await gmailHandlers.handleGmailListUnreadEmails(
+            args,
+            bundle.gmail
+          );
+          break;
 
         // Drive tools
         case "google_drive_list_files":

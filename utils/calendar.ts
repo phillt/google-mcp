@@ -375,6 +375,146 @@ export default class GoogleCalendar {
     }
   }
 
+  async respondToEvent(
+    eventId: string,
+    response: "accepted" | "declined" | "tentative",
+    accountEmail: string,
+    calendarId?: string
+  ) {
+    try {
+      const targetCalendarId = calendarId || this.defaultCalendarId;
+
+      // Get the current event
+      const event = await this.calendar.events.get({
+        calendarId: targetCalendarId,
+        eventId: eventId,
+      });
+
+      const attendees = event.data.attendees || [];
+      const normalizedEmail = accountEmail.toLowerCase();
+
+      // Find the current user in the attendees list
+      let found = false;
+      for (const attendee of attendees) {
+        if (attendee.email && attendee.email.toLowerCase() === normalizedEmail) {
+          attendee.responseStatus = response;
+          found = true;
+          break;
+        }
+      }
+
+      // If user not in attendees list, add them as self-attendee
+      if (!found) {
+        attendees.push({
+          email: accountEmail,
+          responseStatus: response,
+          self: true,
+        });
+      }
+
+      // Update the event with the new attendee response
+      await this.calendar.events.patch({
+        calendarId: targetCalendarId,
+        eventId: eventId,
+        requestBody: { attendees },
+        sendUpdates: "all",
+      });
+
+      return `Event "${event.data.summary}" response set to: ${response}`;
+    } catch (error) {
+      throw new Error(
+        `Failed to respond to event: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async quickAddEvent(text: string, calendarId?: string) {
+    try {
+      const targetCalendarId = calendarId || this.defaultCalendarId;
+
+      const event = await this.calendar.events.quickAdd({
+        calendarId: targetCalendarId,
+        text: text,
+      });
+
+      return `Event "${event.data.summary}" created with ID: ${event.data.id} in calendar: ${targetCalendarId}`;
+    } catch (error) {
+      throw new Error(
+        `Failed to quick add event: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async getEventInstances(
+    eventId: string,
+    calendarId?: string,
+    timeMin?: string,
+    timeMax?: string,
+    maxResults?: number
+  ) {
+    try {
+      const targetCalendarId = calendarId || this.defaultCalendarId;
+
+      const params: any = {
+        calendarId: targetCalendarId,
+        eventId: eventId,
+      };
+
+      if (timeMin) params.timeMin = timeMin;
+      if (timeMax) params.timeMax = timeMax;
+      if (maxResults) params.maxResults = maxResults;
+
+      const res = await this.calendar.events.instances(params);
+
+      return (
+        `Instances of recurring event ${eventId}:\n` +
+        (res.data.items
+          .map(
+            (item: any) =>
+              `${item.summary} (${item.start.dateTime || item.start.date} - ${
+                item.end.dateTime || item.end.date
+              })${item.id ? " - ID: " + item.id : ""}`
+          )
+          .join("\n") || "No instances found")
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to get event instances: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async moveEvent(
+    eventId: string,
+    destinationCalendarId: string,
+    sourceCalendarId?: string
+  ) {
+    try {
+      const fromCalendarId = sourceCalendarId || this.defaultCalendarId;
+
+      const event = await this.calendar.events.move({
+        calendarId: fromCalendarId,
+        eventId: eventId,
+        destination: destinationCalendarId,
+        sendUpdates: "all",
+      });
+
+      return `Event "${event.data.summary}" moved from calendar ${fromCalendarId} to ${destinationCalendarId}`;
+    } catch (error) {
+      throw new Error(
+        `Failed to move event: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
   async listCalendars() {
     try {
       const res = await this.calendar.calendarList.list();

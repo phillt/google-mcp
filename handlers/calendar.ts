@@ -8,6 +8,10 @@ import {
   isUpdateEventArgs,
   isDeleteEventArgs,
   isFindFreeTimeArgs,
+  isRespondToEventArgs,
+  isQuickAddEventArgs,
+  isGetEventInstancesArgs,
+  isMoveEventArgs,
 } from "../utils/helper";
 
 export async function handleCalendarSetDefault(

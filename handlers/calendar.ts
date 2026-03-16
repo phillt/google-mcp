@@ -207,3 +207,83 @@ export async function handleCalendarFindFreeTime(
     isError: false,
   };
 }
+
+export async function handleCalendarRespondToEvent(
+  args: any,
+  googleCalendarInstance: GoogleCalendar,
+  accountId: string
+) {
+  if (!isRespondToEventArgs(args)) {
+    throw new Error("Invalid arguments for google_calendar_respond_to_event");
+  }
+
+  const { eventId, response, calendarId } = args;
+  const result = await googleCalendarInstance.respondToEvent(
+    eventId,
+    response,
+    accountId,
+    calendarId
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleCalendarQuickAddEvent(
+  args: any,
+  googleCalendarInstance: GoogleCalendar
+) {
+  if (!isQuickAddEventArgs(args)) {
+    throw new Error("Invalid arguments for google_calendar_quick_add_event");
+  }
+
+  const { text, calendarId } = args;
+  const result = await googleCalendarInstance.quickAddEvent(text, calendarId);
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleCalendarGetEventInstances(
+  args: any,
+  googleCalendarInstance: GoogleCalendar
+) {
+  if (!isGetEventInstancesArgs(args)) {
+    throw new Error("Invalid arguments for google_calendar_get_event_instances");
+  }
+
+  const { eventId, calendarId, timeMin, timeMax, maxResults } = args;
+  const result = await googleCalendarInstance.getEventInstances(
+    eventId,
+    calendarId,
+    timeMin,
+    timeMax,
+    maxResults
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}
+
+export async function handleCalendarMoveEvent(
+  args: any,
+  googleCalendarInstance: GoogleCalendar
+) {
+  if (!isMoveEventArgs(args)) {
+    throw new Error("Invalid arguments for google_calendar_move_event");
+  }
+
+  const { eventId, destinationCalendarId, sourceCalendarId } = args;
+  const result = await googleCalendarInstance.moveEvent(
+    eventId,
+    destinationCalendarId,
+    sourceCalendarId
+  );
+  return {
+    content: [{ type: "text", text: result }],
+    isError: false,
+  };
+}

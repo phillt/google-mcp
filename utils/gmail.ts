@@ -13,6 +13,59 @@ interface Attachment {
   mimeType?: string;
 }
 
+/**
+ * RFC 2047 encoded-word for a message header value.
+ *
+ * RFC 5322 requires header fields to be US-ASCII. Putting raw UTF-8 in a
+ * `Subject:` line is not merely sloppy — every hop downstream is entitled to
+ * interpret those bytes in its own default single-byte code page, which is how a
+ * plain em dash becomes a run of Latin-1 gibberish: one UTF-8-to-CP1252 round
+ * trip per hop. Observed in the wild on mail this server sent, and it compounds —
+ * a thread that was sent and read back several times accumulated FOUR generations
+ * of the corruption.
+ *
+ * The message BODY was never affected, because every body part correctly declares
+ * `charset=utf-8`. Only the headers lacked an encoding, which is exactly why the
+ * symptom was subject-only and looked like a mystery.
+ *
+ * ASCII passes through untouched, deliberately: an encoded-word is unreadable in
+ * transit and in logs, and the overwhelming majority of subjects are ASCII.
+ *
+ * Encoded-words are capped at 75 characters INCLUDING the `=?UTF-8?B?...?=`
+ * wrapper (RFC 2047 s.2), so a long non-ASCII value is split across several
+ * space-separated words. Splitting happens on whole UTF-8 characters, never mid
+ * sequence — a split multi-byte character would reintroduce the very corruption
+ * this exists to prevent.
+ *
+ * Apply this to HEADERS only. The `Subject:` lines this file builds for DISPLAY
+ * (in `listEmails`, `getEmail`) must stay human-readable.
+ */
+export function encodeHeaderWord(value: string): string {
+  if (!/[^\x00-\x7F]/.test(value)) return value;
+
+  const PREFIX = "=?UTF-8?B?";
+  const SUFFIX = "?=";
+  // 75 total minus the wrapper; base64 turns 3 bytes into 4 chars, so round the
+  // payload budget down to a whole number of 3-byte groups.
+  const budget = 75 - PREFIX.length - SUFFIX.length;
+  const maxBytes = Math.floor(budget / 4) * 3;
+
+  const words: string[] = [];
+  let chunk: number[] = [];
+  for (const char of value) {
+    const bytes = [...Buffer.from(char, "utf8")];
+    if (chunk.length + bytes.length > maxBytes && chunk.length > 0) {
+      words.push(PREFIX + Buffer.from(chunk).toString("base64") + SUFFIX);
+      chunk = [];
+    }
+    chunk.push(...bytes);
+  }
+  if (chunk.length > 0) {
+    words.push(PREFIX + Buffer.from(chunk).toString("base64") + SUFFIX);
+  }
+  return words.join(" ");
+}
+
 export default class GoogleGmail {
   private gmail: any;
   private drive: any;
@@ -387,10 +440,10 @@ export default class GoogleGmail {
     if (bcc && bcc.length) {
       emailLines.push(`Bcc: ${bcc.join(", ")}`);
     }
-    emailLines.push(`Subject: ${subject}`);
+    emailLines.push(`Subject: ${encodeHeaderWord(subject)}`);
     if (extraHeaders) {
       for (const [key, value] of Object.entries(extraHeaders)) {
-        emailLines.push(`${key}: ${value}`);
+        emailLines.push(`${key}: ${encodeHeaderWord(value)}`);
       }
     }
     emailLines.push(`MIME-Version: 1.0`);
@@ -471,7 +524,7 @@ export default class GoogleGmail {
         if (bcc && bcc.length) {
           emailLines.push(`Bcc: ${bcc.join(", ")}`);
         }
-        emailLines.push(`Subject: ${subject}`);
+        emailLines.push(`Subject: ${encodeHeaderWord(subject)}`);
         emailLines.push(
           `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`
         );
@@ -557,7 +610,7 @@ export default class GoogleGmail {
         if (bcc && bcc.length) {
           emailLines.push(`Bcc: ${bcc.join(", ")}`);
         }
-        emailLines.push(`Subject: ${subject}`);
+        emailLines.push(`Subject: ${encodeHeaderWord(subject)}`);
         emailLines.push(
           `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`
         );
@@ -997,9 +1050,9 @@ export default class GoogleGmail {
         if (bcc && bcc.length) {
           emailLines.push(`Bcc: ${bcc.join(", ")}`);
         }
-        emailLines.push(`Subject: ${subject}`);
+        emailLines.push(`Subject: ${encodeHeaderWord(subject)}`);
         for (const [key, value] of Object.entries(extraHeaders)) {
-          emailLines.push(`${key}: ${value}`);
+          emailLines.push(`${key}: ${encodeHeaderWord(value)}`);
         }
         emailLines.push(
           `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`
@@ -1102,9 +1155,9 @@ export default class GoogleGmail {
         if (bcc && bcc.length) {
           emailLines.push(`Bcc: ${bcc.join(", ")}`);
         }
-        emailLines.push(`Subject: ${subject}`);
+        emailLines.push(`Subject: ${encodeHeaderWord(subject)}`);
         for (const [key, value] of Object.entries(extraHeaders)) {
-          emailLines.push(`${key}: ${value}`);
+          emailLines.push(`${key}: ${encodeHeaderWord(value)}`);
         }
         emailLines.push(
           `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset=utf-8`

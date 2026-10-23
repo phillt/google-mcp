@@ -375,6 +375,7 @@ export function isListFilesArgs(args: any): args is {
   pageSize?: number;
   orderBy?: string;
   fields?: string;
+  driveId?: string;
   accountId: string;
 } {
   return (
@@ -383,6 +384,7 @@ export function isListFilesArgs(args: any): args is {
     (args.pageSize === undefined || typeof args.pageSize === "number") &&
     (args.orderBy === undefined || typeof args.orderBy === "string") &&
     (args.fields === undefined || typeof args.fields === "string") &&
+    (args.driveId === undefined || typeof args.driveId === "string") &&
     hasRequiredAccountId(args)
   );
 }

@@ -33,11 +33,12 @@ export const LIST_EMAILS_TOOL: Tool = {
       },
       maxResults: {
         type: "number",
-        description: "Maximum number of emails to return",
+        description: "Maximum number of emails to return (default: 10)",
       },
       query: {
         type: "string",
-        description: "Search query to filter emails",
+        description:
+          "Gmail search syntax, e.g. 'from:alice subject:invoice after:2026/08/01 before:2026/11/01 is:unread in:inbox'. Dates use after:/before: (not since:/until:). Put the result limit in maxResults, not in the query.",
       },
       ...accountIdProperty,
     },

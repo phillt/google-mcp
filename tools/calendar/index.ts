@@ -91,13 +91,15 @@ export const CREATE_EVENT_TOOL: Tool = {
 
 export const GET_EVENTS_TOOL: Tool = {
   name: "google_calendar_get_events",
-  description: "Retrieve upcoming events from Google Calendar",
+  description:
+    "Retrieve upcoming events from Google Calendar. Recurring events are expanded into one entry per occurrence. Says when more events exist than limit.",
   inputSchema: {
     type: "object",
     properties: {
       limit: {
         type: "number",
-        description: "Maximum number of events to return",
+        description:
+          "Maximum number of events to return (default: 50, max: 2500)",
       },
       calendarId: {
         type: "string",
@@ -114,7 +116,8 @@ export const GET_EVENTS_TOOL: Tool = {
       },
       q: {
         type: "string",
-        description: "Free text search term for events",
+        description:
+          "Plain free-text match against event title, description, location and attendees. Not a boolean query: 'piano OR lesson' matches nothing. Use one term per call.",
       },
       showDeleted: {
         type: "boolean",

@@ -67,7 +67,7 @@ export default class GoogleCalendar {
   }
 
   async getEvents(
-    limit: number = 10,
+    limit: number = 50,
     calendarId?: string,
     timeMin?: string,
     timeMax?: string,
@@ -92,18 +92,25 @@ export default class GoogleCalendar {
       if (showDeleted) params.showDeleted = true;
 
       const res = await this.calendar.events.list(params);
+      const items = res.data.items || [];
 
-      return (
+      let output =
         `Calendar: ${targetCalendarId}\n` +
-        (res.data.items
+        (items
           .map(
             (item: any) =>
               `${item.summary} (${item.start.dateTime || item.start.date} - ${
                 item.end.dateTime || item.end.date
               })${item.id ? " - ID: " + item.id : ""}`
           )
-          .join("\n") || "No upcoming events")
-      );
+          .join("\n") || "No upcoming events");
+
+      // Without this a capped list reads as complete, and a caller concludes an
+      // event past the cap does not exist.
+      if (res.data.nextPageToken) {
+        output += `\n\n===\nShowing ${items.length} events; more exist. Narrow timeMin/timeMax or raise limit.`;
+      }
+      return output;
     } catch (error) {
       throw new Error(
         `Failed to list events: ${

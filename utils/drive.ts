@@ -22,9 +22,15 @@ export default class GoogleDrive {
         q,
         pageSize: pageSize,
         orderBy: orderBy || "modifiedTime desc",
-        fields:
-          fields ||
-          "nextPageToken, incompleteSearch, files(id, name, mimeType, modifiedTime, size, webViewLink, driveId)",
+        // The truncation notices below need these, so keep them in a custom
+        // fields value too.
+        fields: ["nextPageToken", "incompleteSearch"]
+          .filter((f) => !fields?.includes(f))
+          .concat(
+            fields ||
+              "files(id, name, mimeType, modifiedTime, size, webViewLink, driveId)"
+          )
+          .join(", "),
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
         corpora: driveId ? "drive" : "allDrives",
@@ -35,7 +41,7 @@ export default class GoogleDrive {
 
       if (!response.data.files || response.data.files.length === 0) {
         return response.data.incompleteSearch
-          ? "No files found, but the search was incomplete. Pass driveId to search one shared drive."
+          ? "No files found, but the search across all drives was incomplete. Narrow the query, or pass driveId if you know the shared drive's ID."
           : "No files found.";
       }
 
@@ -56,7 +62,7 @@ export default class GoogleDrive {
         output += `\n\n===\nShowing ${response.data.files.length} files; more exist. Narrow the query or raise pageSize.`;
       }
       if (response.data.incompleteSearch) {
-        output += `\n\n===\nSearch was incomplete across all drives. Pass driveId to search one shared drive.`;
+        output += `\n\n===\nSearch across all drives was incomplete. Narrow the query, or pass driveId if you know the shared drive's ID.`;
       }
       return output;
     } catch (error) {

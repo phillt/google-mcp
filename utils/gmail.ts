@@ -75,7 +75,8 @@ export function encodeHeaderWord(value: string): string {
  * returns nothing and the caller keeps rephrasing instead of fixing the call.
  *
  * The limit is pulled out and returned as `maxResults`; `since:`/`until:`
- * become `after:`/`before:`. Quoted phrases are left exactly as written.
+ * become `after:`/`before:`, and ISO dates on those become YYYY/MM/DD. Quoted
+ * phrases are left exactly as written.
  */
 export function normalizeGmailQuery(query?: string): {
   query?: string;
@@ -93,8 +94,14 @@ export function normalizeGmailQuery(query?: string): {
         maxResults = parseInt(n, 10);
         return " ";
       })
-      .replace(/\bsince:/gi, "after:")
-      .replace(/\buntil:/gi, "before:");
+      // Anchored at a token start so `label:until:foo` is left alone.
+      .replace(/(^|[\s(-])since:/gi, "$1after:")
+      .replace(/(^|[\s(-])until:/gi, "$1before:")
+      // Gmail documents YYYY/MM/DD; models write ISO dates.
+      .replace(
+        /\b(after|before):(\d{4})-(\d{2})-(\d{2})\b/gi,
+        "$1:$2/$3/$4"
+      );
   });
   const normalized = parts.join("").replace(/\s+/g, " ").trim();
 
@@ -191,7 +198,7 @@ export default class GoogleGmail {
       }
 
       // Format results with index numbers
-      return results
+      let output = results
         .map(
           (msg, index) =>
             `[${index + 1}] ID: ${msg.id}\nFrom: ${msg.from}\nDate: ${
@@ -199,6 +206,11 @@ export default class GoogleGmail {
             }\nSubject: ${msg.subject}\nSnippet: ${msg.snippet}`
         )
         .join("\n\n---\n\n");
+
+      if (response.data.nextPageToken) {
+        output += `\n\n===\nShowing ${results.length} emails; more exist. Narrow the query or raise maxResults.`;
+      }
+      return output;
     } catch (error) {
       throw new Error(
         `Failed to list emails: ${
@@ -403,6 +415,7 @@ export default class GoogleGmail {
           const metadataResponse = await this.drive.files.get({
             fileId: attachment.driveFileId,
             fields: "name,mimeType,size",
+            supportsAllDrives: true,
           });
 
           const { name, mimeType, size } = metadataResponse.data;
@@ -421,6 +434,7 @@ export default class GoogleGmail {
             {
               fileId: attachment.driveFileId,
               alt: "media",
+              supportsAllDrives: true,
             },
             { responseType: "arraybuffer" }
           );

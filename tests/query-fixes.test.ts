@@ -73,6 +73,25 @@ describe("drive listFiles (#2)", () => {
     expect(out).toContain("Shared drive: 0Aabc");
   });
 
+  it("keeps the paging fields when the caller passes its own fields", async () => {
+    const drive = new GoogleDrive(null);
+    const list = stub({ files: [file], nextPageToken: "tok" });
+    (drive as any).drive = { files: { list: list.fn } };
+    const out = await drive.listFiles(undefined, 10, undefined, "files(id, name)");
+    expect(list.calls[0].fields).toBe(
+      "nextPageToken, incompleteSearch, files(id, name)"
+    );
+    expect(out).toContain("more exist");
+  });
+
+  it("does not repeat paging fields the caller already asked for", async () => {
+    const drive = new GoogleDrive(null);
+    const list = stub({ files: [file] });
+    (drive as any).drive = { files: { list: list.fn } };
+    await drive.listFiles(undefined, 10, undefined, "nextPageToken, files(id)");
+    expect(list.calls[0].fields).toBe("incompleteSearch, nextPageToken, files(id)");
+  });
+
   it("scopes to one shared drive when driveId is given", async () => {
     const drive = new GoogleDrive(null);
     const list = stub({ files: [file] });
@@ -130,7 +149,23 @@ describe("normalizeGmailQuery (#3)", () => {
   it("maps since:/until: to after:/before:", () => {
     expect(
       normalizeGmailQuery("subject:Flint since:2026-08-01 until:2026-11-01").query
-    ).toBe("subject:Flint after:2026-08-01 before:2026-11-01");
+    ).toBe("subject:Flint after:2026/08/01 before:2026/11/01");
+  });
+
+  it("only maps since:/until: at the start of a term", () => {
+    // `\b` also matches after a colon, which corrupted label names.
+    expect(normalizeGmailQuery("label:until:foo subject:since:x").query).toBe(
+      "label:until:foo subject:since:x"
+    );
+    expect(normalizeGmailQuery("-since:2026/01/01 (until:2026/02/01)").query).toBe(
+      "-after:2026/01/01 (before:2026/02/01)"
+    );
+  });
+
+  it("rewrites ISO dates to the documented YYYY/MM/DD form", () => {
+    expect(normalizeGmailQuery("after:2026-08-01 before:2026-11-01").query).toBe(
+      "after:2026/08/01 before:2026/11/01"
+    );
   });
 
   it("leaves quoted phrases untouched", () => {
@@ -183,6 +218,28 @@ describe("gmail listEmails (#3)", () => {
     const { gmail } = gmailWith({});
     expect(
       await gmail.listEmails(undefined, undefined, "from:x since:2026-08-01")
-    ).toBe("No messages found. (Searched for: from:x after:2026-08-01)");
+    ).toBe("No messages found. (Searched for: from:x after:2026/08/01)");
+  });
+
+  it("says when more emails exist than were returned", async () => {
+    const gmail = new GoogleGmail(null);
+    (gmail as any).gmail = {
+      users: {
+        messages: {
+          list: async () => ({
+            data: { messages: [{ id: "m1" }], nextPageToken: "tok" },
+          }),
+          get: async () => ({
+            data: {
+              snippet: "hi",
+              payload: { headers: [{ name: "Subject", value: "Hello" }] },
+            },
+          }),
+        },
+      },
+    };
+    expect(await gmail.listEmails(undefined, 1)).toContain(
+      "Showing 1 emails; more exist"
+    );
   });
 });

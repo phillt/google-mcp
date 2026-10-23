@@ -66,6 +66,45 @@ export function encodeHeaderWord(value: string): string {
   return words.join(" ");
 }
 
+/**
+ * Repair the mistakes models make when writing a Gmail `q`.
+ *
+ * Models routinely fold the result limit into the query (`is:unread
+ * maxResults=5`) and use `since:`/`until:`, which are not Gmail operators.
+ * Gmail treats all of these as literal search terms, so the search quietly
+ * returns nothing and the caller keeps rephrasing instead of fixing the call.
+ *
+ * The limit is pulled out and returned as `maxResults`; `since:`/`until:`
+ * become `after:`/`before:`. Quoted phrases are left exactly as written.
+ */
+export function normalizeGmailQuery(query?: string): {
+  query?: string;
+  maxResults?: number;
+  rewritten: boolean;
+} {
+  if (!query) return { query, rewritten: false };
+
+  let maxResults: number | undefined;
+  // Odd indexes of the split are the quoted phrases.
+  const parts = query.split(/("[^"]*")/).map((part, i) => {
+    if (i % 2 === 1) return part;
+    return part
+      .replace(/\bmax_?results\s*[=:]\s*(\d+)\b/gi, (_, n) => {
+        maxResults = parseInt(n, 10);
+        return " ";
+      })
+      .replace(/\bsince:/gi, "after:")
+      .replace(/\buntil:/gi, "before:");
+  });
+  const normalized = parts.join("").replace(/\s+/g, " ").trim();
+
+  return {
+    query: normalized || undefined,
+    maxResults,
+    rewritten: normalized !== query.replace(/\s+/g, " ").trim(),
+  };
+}
+
 export default class GoogleGmail {
   private gmail: any;
   private drive: any;
@@ -98,20 +137,23 @@ export default class GoogleGmail {
 
   async listEmails(
     labelIds?: string[],
-    maxResults: number = 10,
+    maxResults?: number,
     query?: string
   ) {
     try {
+      const normalized = normalizeGmailQuery(query);
       const response = await this.gmail.users.messages.list({
         userId: "me",
         labelIds: labelIds,
-        maxResults: maxResults,
-        q: query,
+        maxResults: maxResults ?? normalized.maxResults ?? 10,
+        q: normalized.query,
       });
 
       if (!response.data.messages || response.data.messages.length === 0) {
         this.recentEmails = [];
-        return "No messages found.";
+        return normalized.rewritten
+          ? `No messages found. (Searched for: ${normalized.query ?? "(all mail)"})`
+          : "No messages found.";
       }
 
       // Get details for each message

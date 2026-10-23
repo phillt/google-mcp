@@ -208,10 +208,10 @@ describe("gmail listEmails (#3)", () => {
     expect(list.calls[0].maxResults).toBe(3);
   });
 
-  it("defaults to 10", async () => {
+  it("defaults to 50", async () => {
     const { gmail, list } = gmailWith({});
     await gmail.listEmails(undefined, undefined, "is:unread");
-    expect(list.calls[0].maxResults).toBe(10);
+    expect(list.calls[0].maxResults).toBe(50);
   });
 
   it("shows the rewritten query when nothing matched", async () => {
@@ -241,5 +241,79 @@ describe("gmail listEmails (#3)", () => {
     expect(await gmail.listEmails(undefined, 1)).toContain(
       "Showing 1 emails; more exist"
     );
+  });
+});
+
+describe("gmail bulk listing", () => {
+  // A stub whose messages.get resolves after a delay, tracking how many
+  // requests are in flight at once.
+  function gmailWithMessages(count: number, nextPageToken?: string) {
+    const gmail = new GoogleGmail(null);
+    const listCalls: any[] = [];
+    const state = { inFlight: 0, peak: 0 };
+    (gmail as any).gmail = {
+      users: {
+        messages: {
+          list: async (params: any) => {
+            listCalls.push(params);
+            return {
+              data: {
+                messages: Array.from({ length: count }, (_, i) => ({ id: `m${i}` })),
+                nextPageToken,
+                resultSizeEstimate: count + (nextPageToken ? 10 : 0),
+              },
+            };
+          },
+          get: async ({ id }: any) => {
+            state.inFlight++;
+            state.peak = Math.max(state.peak, state.inFlight);
+            // Later ids resolve first, so order only survives if it is kept.
+            await new Promise((r) => setTimeout(r, 50 - Number(id.slice(1))));
+            state.inFlight--;
+            return {
+              data: {
+                snippet: "",
+                payload: { headers: [{ name: "Subject", value: `S-${id}` }] },
+              },
+            };
+          },
+        },
+      },
+    };
+    return { gmail, listCalls, state };
+  }
+
+  it("fetches details in parallel, at most 10 at a time, in order", async () => {
+    const { gmail, state } = gmailWithMessages(50);
+    const out = await gmail.listEmails(undefined, 50);
+    expect(state.peak).toBe(10);
+    const subjects = [...out.matchAll(/Subject: (S-m\d+)/g)].map((m) => m[1]);
+    expect(subjects).toEqual(Array.from({ length: 50 }, (_, i) => `S-m${i}`));
+  });
+
+  it("lists a message with no payload instead of failing", async () => {
+    const gmail = new GoogleGmail(null);
+    (gmail as any).gmail = {
+      users: {
+        messages: {
+          list: async () => ({ data: { messages: [{ id: "m1" }] } }),
+          get: async () => ({ data: { snippet: "" } }),
+        },
+      },
+    };
+    expect(await gmail.listEmails()).toContain("Subject: (No subject)");
+  });
+
+  it("list_unread_emails defaults to 50", async () => {
+    const { gmail, listCalls } = gmailWithMessages(1);
+    await gmail.listUnreadEmails();
+    expect(listCalls[0].maxResults).toBe(50);
+  });
+
+  it("list_unread_emails says when more exist", async () => {
+    const { gmail } = gmailWithMessages(2, "tok");
+    const out = await gmail.listUnreadEmails(2);
+    expect(out).toContain("Showing 2 unread email(s) (estimated 12 total unread)");
+    expect(out).toContain("More unread emails exist beyond this set");
   });
 });

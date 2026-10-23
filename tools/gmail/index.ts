@@ -33,7 +33,7 @@ export const LIST_EMAILS_TOOL: Tool = {
       },
       maxResults: {
         type: "number",
-        description: "Maximum number of emails to return (default: 10)",
+        description: "Maximum number of emails to return (default: 50, max: 500)",
       },
       query: {
         type: "string",
@@ -414,7 +414,7 @@ export const DRAFT_REPLY_TOOL: Tool = {
 export const BATCH_MODIFY_LABELS_TOOL: Tool = {
   name: "google_gmail_batch_modify_labels",
   description:
-    "Add or remove labels from multiple emails in a single batch operation (up to 1000). Common patterns: mark as read (removeLabelIds: ['UNREAD']), mark as unread (addLabelIds: ['UNREAD']), star (addLabelIds: ['STARRED']), trash (addLabelIds: ['TRASH']), archive (removeLabelIds: ['INBOX']).",
+    "Add or remove labels from multiple emails in a single batch operation (up to 1000). addLabelIds and removeLabelIds can be combined in one call, e.g. file and mark read together with addLabelIds: ['Label_7'], removeLabelIds: ['UNREAD']. Common patterns: mark as read (removeLabelIds: ['UNREAD']), mark as unread (addLabelIds: ['UNREAD']), star (addLabelIds: ['STARRED']), trash (addLabelIds: ['TRASH']), archive (removeLabelIds: ['INBOX']).",
   inputSchema: {
     type: "object",
     properties: {
@@ -471,7 +471,8 @@ export const LIST_UNREAD_EMAILS_TOOL: Tool = {
     properties: {
       maxResults: {
         type: "number",
-        description: "Maximum number of unread emails to return (default 10)",
+        description:
+          "Maximum number of unread emails to return (default: 50, max: 500)",
       },
       labelIds: {
         type: "array",

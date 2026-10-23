@@ -170,7 +170,8 @@ export default class GoogleGmail {
           metadataHeaders: ["Subject", "From", "Date"],
         });
 
-        const headers = msgDetails.data.payload.headers;
+        // One odd message should not fail a 50-message list.
+        const headers = msgDetails.data.payload?.headers ?? [];
         results[i] = {
           id: messages[i].id,
           subject:

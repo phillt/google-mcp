@@ -291,6 +291,19 @@ describe("gmail bulk listing", () => {
     expect(subjects).toEqual(Array.from({ length: 50 }, (_, i) => `S-m${i}`));
   });
 
+  it("lists a message with no payload instead of failing", async () => {
+    const gmail = new GoogleGmail(null);
+    (gmail as any).gmail = {
+      users: {
+        messages: {
+          list: async () => ({ data: { messages: [{ id: "m1" }] } }),
+          get: async () => ({ data: { snippet: "" } }),
+        },
+      },
+    };
+    expect(await gmail.listEmails()).toContain("Subject: (No subject)");
+  });
+
   it("list_unread_emails defaults to 50", async () => {
     const { gmail, listCalls } = gmailWithMessages(1);
     await gmail.listUnreadEmails();

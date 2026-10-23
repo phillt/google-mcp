@@ -10,14 +10,15 @@ const accountIdProperty = {
 
 export const LIST_FILES_TOOL: Tool = {
   name: "google_drive_list_files",
-  description: "List files from Google Drive",
+  description:
+    "List files from Google Drive, including shared drives. Says when more results exist than pageSize.",
   inputSchema: {
     type: "object",
     properties: {
       query: {
         type: "string",
         description:
-          "Google Drive search query (e.g., 'name contains \"report\"')",
+          "Google Drive search query (e.g., 'name contains \"report\"', \"modifiedTime > '2026-07-10T00:00:00'\"). Use plain > and <, not HTML entities. Defaults to 'trashed = false'.",
       },
       pageSize: {
         type: "number",
@@ -32,6 +33,11 @@ export const LIST_FILES_TOOL: Tool = {
         type: "string",
         description:
           "Fields to include in the response (use Google Drive API syntax)",
+      },
+      driveId: {
+        type: "string",
+        description:
+          "Optional: ID of one shared drive to search. Omit to search My Drive, shared-with-me and all shared drives.",
       },
       ...accountIdProperty,
     },

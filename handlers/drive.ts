@@ -15,12 +15,13 @@ export async function handleDriveListFiles(
   if (!isListFilesArgs(args)) {
     throw new Error("Invalid arguments for google_drive_list_files");
   }
-  const { query, pageSize, orderBy, fields } = args;
+  const { query, pageSize, orderBy, fields, driveId } = args;
   const result = await googleDriveInstance.listFiles(
     query,
     pageSize,
     orderBy,
-    fields
+    fields,
+    driveId
   );
   return {
     content: [{ type: "text", text: result }],

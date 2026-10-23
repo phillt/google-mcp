@@ -11,37 +11,59 @@ export default class GoogleDrive {
     query?: string,
     pageSize: number = 10,
     orderBy?: string,
-    fields?: string
+    fields?: string,
+    driveId?: string
   ) {
+    const q = query || "trashed = false";
     try {
-      const response = await this.drive.files.list({
-        q: query || "trashed = false",
+      // Without these flags files.list only searches My Drive and
+      // shared-with-me, so nothing in a shared drive is ever returned.
+      const params: any = {
+        q,
         pageSize: pageSize,
         orderBy: orderBy || "modifiedTime desc",
         fields:
           fields ||
-          "files(id, name, mimeType, modifiedTime, size, webViewLink)",
-      });
+          "nextPageToken, incompleteSearch, files(id, name, mimeType, modifiedTime, size, webViewLink, driveId)",
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        corpora: driveId ? "drive" : "allDrives",
+      };
+      if (driveId) params.driveId = driveId;
+
+      const response = await this.drive.files.list(params);
 
       if (!response.data.files || response.data.files.length === 0) {
-        return "No files found.";
+        return response.data.incompleteSearch
+          ? "No files found, but the search was incomplete. Pass driveId to search one shared drive."
+          : "No files found.";
       }
 
-      return response.data.files
+      let output = response.data.files
         .map((file: any) => {
           const size = file.size
             ? `${(parseInt(file.size) / 1024).toFixed(2)} KB`
             : "N/A";
           return `${file.name} (${file.mimeType})\nID: ${file.id}\nModified: ${
             file.modifiedTime
-          }\nSize: ${size}\nLink: ${file.webViewLink || "N/A"}`;
+          }\nSize: ${size}\nLink: ${file.webViewLink || "N/A"}${
+            file.driveId ? `\nShared drive: ${file.driveId}` : ""
+          }`;
         })
         .join("\n\n---\n\n");
+
+      if (response.data.nextPageToken) {
+        output += `\n\n===\nShowing ${response.data.files.length} files; more exist. Narrow the query or raise pageSize.`;
+      }
+      if (response.data.incompleteSearch) {
+        output += `\n\n===\nSearch was incomplete across all drives. Pass driveId to search one shared drive.`;
+      }
+      return output;
     } catch (error) {
       throw new Error(
         `Failed to list files: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        } (q: ${q})`
       );
     }
   }
@@ -51,6 +73,7 @@ export default class GoogleDrive {
       // First get the file metadata to check its type
       const fileMetadata = await this.drive.files.get({
         fileId: fileId,
+        supportsAllDrives: true,
         fields: "name,mimeType",
       });
 
@@ -65,6 +88,7 @@ export default class GoogleDrive {
       ) {
         const response = await this.drive.files.get({
           fileId: fileId,
+          supportsAllDrives: true,
           alt: "media",
         });
 
@@ -131,6 +155,7 @@ export default class GoogleDrive {
           fileMetadata.mimeType = mimeType;
           const response = await this.drive.files.create({
             requestBody: fileMetadata,
+            supportsAllDrives: true,
             media: {
               mimeType: resolvedSourceMimeType,
               body: content,
@@ -145,6 +170,7 @@ export default class GoogleDrive {
         // No content — create empty Workspace file
         const response = await this.drive.files.create({
           requestBody: fileMetadata,
+          supportsAllDrives: true,
           fields: "id,name,webViewLink",
           mimeType: mimeType,
         });
@@ -156,6 +182,7 @@ export default class GoogleDrive {
       // For regular files with content
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
+        supportsAllDrives: true,
         media: {
           mimeType: mimeType,
           body: content,
@@ -186,6 +213,7 @@ export default class GoogleDrive {
       // First get the file metadata to verify its type
       const fileMetadata = await this.drive.files.get({
         fileId: fileId,
+        supportsAllDrives: true,
         fields: "name,mimeType",
       });
 
@@ -201,6 +229,7 @@ export default class GoogleDrive {
 
         const response = await this.drive.files.update({
           fileId: fileId,
+          supportsAllDrives: true,
           media: {
             mimeType: resolvedSourceMimeType,
             body: content,
@@ -214,6 +243,7 @@ export default class GoogleDrive {
       // Update regular file content
       const response = await this.drive.files.update({
         fileId: fileId,
+        supportsAllDrives: true,
         media: {
           mimeType: mimeType || fileMimeType,
           body: content,
@@ -236,11 +266,13 @@ export default class GoogleDrive {
       if (permanently) {
         await this.drive.files.delete({
           fileId: fileId,
+          supportsAllDrives: true,
         });
         return `File with ID ${fileId} permanently deleted.`;
       } else {
         await this.drive.files.update({
           fileId: fileId,
+          supportsAllDrives: true,
           requestBody: {
             trashed: true,
           },
@@ -266,6 +298,7 @@ export default class GoogleDrive {
     try {
       const response = await this.drive.permissions.create({
         fileId: fileId,
+        supportsAllDrives: true,
         requestBody: {
           type: "user",
           role: role,
@@ -278,6 +311,7 @@ export default class GoogleDrive {
       // Get the file name
       const fileMetadata = await this.drive.files.get({
         fileId: fileId,
+        supportsAllDrives: true,
         fields: "name",
       });
 

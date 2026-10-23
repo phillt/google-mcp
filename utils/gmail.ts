@@ -142,6 +142,53 @@ export default class GoogleGmail {
     }
   }
 
+  /**
+   * Fetch Subject/From/Date and snippet for each listed message, in order.
+   * Requests run in parallel, capped so a 50-message list neither waits on 50
+   * sequential round trips nor bursts past Gmail's per-user rate limit.
+   */
+  private async getMessageSummaries(
+    messages: { id: string }[],
+    concurrency: number = 10
+  ) {
+    const results: {
+      id: string;
+      subject: string;
+      from: string;
+      date: string;
+      snippet: string;
+    }[] = new Array(messages.length);
+    let next = 0;
+
+    const worker = async () => {
+      while (next < messages.length) {
+        const i = next++;
+        const msgDetails = await this.gmail.users.messages.get({
+          userId: "me",
+          id: messages[i].id,
+          format: "metadata",
+          metadataHeaders: ["Subject", "From", "Date"],
+        });
+
+        const headers = msgDetails.data.payload.headers;
+        results[i] = {
+          id: messages[i].id,
+          subject:
+            headers.find((h: any) => h.name === "Subject")?.value ||
+            "(No subject)",
+          from: headers.find((h: any) => h.name === "From")?.value || "",
+          date: headers.find((h: any) => h.name === "Date")?.value || "",
+          snippet: msgDetails.data.snippet,
+        };
+      }
+    };
+
+    await Promise.all(
+      Array.from({ length: Math.min(concurrency, messages.length) }, worker)
+    );
+    return results;
+  }
+
   async listEmails(
     labelIds?: string[],
     maxResults?: number,
@@ -152,7 +199,7 @@ export default class GoogleGmail {
       const response = await this.gmail.users.messages.list({
         userId: "me",
         labelIds: labelIds,
-        maxResults: maxResults ?? normalized.maxResults ?? 10,
+        maxResults: maxResults ?? normalized.maxResults ?? 50,
         q: normalized.query,
       });
 
@@ -163,39 +210,9 @@ export default class GoogleGmail {
           : "No messages found.";
       }
 
-      // Get details for each message
-      const results = [];
-      this.recentEmails = []; // Clear previous results
-
-      for (const message of response.data.messages) {
-        const msgDetails = await this.gmail.users.messages.get({
-          userId: "me",
-          id: message.id,
-          format: "metadata",
-          metadataHeaders: ["Subject", "From", "Date"],
-        });
-
-        const headers = msgDetails.data.payload.headers;
-        const subject =
-          headers.find((h: any) => h.name === "Subject")?.value ||
-          "(No subject)";
-        const from = headers.find((h: any) => h.name === "From")?.value || "";
-        const date = headers.find((h: any) => h.name === "Date")?.value || "";
-
-        // Store message data for reference
-        this.recentEmails.push({
-          id: message.id,
-          subject: subject,
-        });
-
-        results.push({
-          id: message.id,
-          subject,
-          from,
-          date,
-          snippet: msgDetails.data.snippet,
-        });
-      }
+      const results = await this.getMessageSummaries(response.data.messages);
+      // Store message data for reference
+      this.recentEmails = results.map(({ id, subject }) => ({ id, subject }));
 
       // Format results with index numbers
       let output = results
@@ -221,7 +238,7 @@ export default class GoogleGmail {
   }
 
   async listUnreadEmails(
-    maxResults: number = 10,
+    maxResults: number = 50,
     additionalLabelIds?: string[]
   ) {
     try {
@@ -240,31 +257,7 @@ export default class GoogleGmail {
         return "No unread messages found.";
       }
 
-      const results = [];
-
-      for (const message of response.data.messages) {
-        const msgDetails = await this.gmail.users.messages.get({
-          userId: "me",
-          id: message.id,
-          format: "metadata",
-          metadataHeaders: ["Subject", "From", "Date"],
-        });
-
-        const headers = msgDetails.data.payload.headers;
-        const subject =
-          headers.find((h: any) => h.name === "Subject")?.value ||
-          "(No subject)";
-        const from = headers.find((h: any) => h.name === "From")?.value || "";
-        const date = headers.find((h: any) => h.name === "Date")?.value || "";
-
-        results.push({
-          id: message.id,
-          subject,
-          from,
-          date,
-          snippet: msgDetails.data.snippet,
-        });
-      }
+      const results = await this.getMessageSummaries(response.data.messages);
 
       let output = results
         .map(
@@ -278,7 +271,7 @@ export default class GoogleGmail {
       // Append pagination footer
       output += `\n\n===\nShowing ${results.length} unread email(s) (estimated ${resultSizeEstimate} total unread)`;
       if (nextPageToken) {
-        output += `\nMore unread emails exist beyond this set.`;
+        output += `\nMore unread emails exist beyond this set. Raise maxResults to get them.`;
       }
 
       return output;

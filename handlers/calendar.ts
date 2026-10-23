@@ -99,7 +99,7 @@ export async function handleCalendarGetEvents(
   }
   const { limit, calendarId, timeMin, timeMax, q, showDeleted } = args;
   const result = await googleCalendarInstance.getEvents(
-    limit || 10,
+    limit || 50,
     calendarId,
     timeMin,
     timeMax,
